@@ -11,6 +11,7 @@ import random
 from sklearn.neighbors import KDTree
 from shapely.geometry import LineString
 from PIL import Image, ImageDraw
+import sys
 
 from traffic_events import TrafficEventType
 from statistics_manager import StatisticManager
