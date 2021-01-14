@@ -19,8 +19,8 @@ from statistics_manager import StatisticManager
 sys.path.append("/scratch/cluster/stephane/Carla_0.9.10/PythonAPI/carla/agents/navigation")
 from global_route_planner import GlobalRoutePlanner
 from global_route_planner_dao import GlobalRoutePlannerDAO
-from scripts.launch_carla import launch_carla_server
-from scripts.kill_carla import kill_carla
+#from scripts.launch_carla import launch_carla_server
+#from scripts.kill_carla import kill_carla
 from score_tests import RouteCompletionTest
 
 class CarlaEnv(object):
