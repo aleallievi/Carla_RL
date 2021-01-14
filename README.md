@@ -15,7 +15,7 @@ python3 generate_slurm.py examples/running_carla/cluster/params.py
 
 cd examples/running_carla/cluster/slurm_scripts
 
-model=ppo.sh
+sbatch model=ppo.sh
 ```
 
 then you can look at the running jobs using `squeue -u stephane`.  
