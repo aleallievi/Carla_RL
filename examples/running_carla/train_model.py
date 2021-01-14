@@ -33,7 +33,6 @@ class Memory():
     actions_log_probs = []
     states_p = []
     terminals = []
-    batch_ep_returns = []
 
     def add(self,s,a,a_log_prob,reward,s_prime,done):
         eps_frames.append(format_frame(s[0]).detach().clone())
@@ -59,7 +58,6 @@ class Memory():
         actions_log_probs.clear()
         states_p.clear()
         terminals.clear()
-        batch_ep_returns.clear()
 
 def train_model(args):
     wandb.init(project='PPO_Carla_Navigation')
@@ -87,6 +85,8 @@ def train_model(args):
 
     wandb.watch(prev_policy)
 
+    batch_ep_returns = []
+
     for iters in range(n_iters):
         with CarlaEnv(args,save_video=False) as env:
             s, _, _, _ = env.reset(False, iters)
@@ -95,7 +95,7 @@ def train_model(args):
             done = False
 
             while not done:
-                a, a_log_prob = prev_policy.choose_action(policy.format_state(s))
+                a, a_log_prob = prev_policy.choose_action(prev_policy.format_state(s))
                 s_prime, reward, done, info = env.step(action=a.detach().tolist(), timeout=2)
 
                 memory.add(s,a,a_log_prob,reward,s_prime,done)
@@ -116,6 +116,7 @@ def train_model(args):
                 avg_batch_ep_returns = sum(batch_ep_returns)/len(batch_ep_returns)
                 moving_avg = (avg_batch_ep_returns - moving_avg) * (2 / (train_iters + 2)) + avg_batch_ep_returns
                 train_iters += 1
+                batch_ep_returns.clear()
 
                 wandb.log({
                     "episode_return (suggested reward w/ ri)": avg_batch_ep_returns,
