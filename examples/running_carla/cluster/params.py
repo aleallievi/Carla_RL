@@ -21,12 +21,12 @@ echo $TM_PORT
 
 sh {CARLA_DIR}/CarlaUE4.sh -world-port=$WORLD_PORT -opengl -quality-level=Epic &
 
-sleep 30
+sleep 100
 """
 
 BODY = """
 cd {target_dir}
-python3 run_ppo_navigation.py --world_port $WORLD_PORT --tm_port $TM_PORT --n_vehicles {n_vehicles}
+python3 train_model.py --client_timeout 999 --world_port $WORLD_PORT --tm_port $TM_PORT
 """
 
 FOOTER = """
@@ -34,15 +34,10 @@ ps
 kill 0
 """
 
-
 PARAMS = {
-        'n_vehicles': [5, 10],
+        'model': ["ppo"],
         }
 
-
-def get_job(n_vehicles):
-    body = BODY.format(
-            target_dir=pathlib.Path(__file__).parent.parent,
-            n_vehicles=n_vehicles)
-
+def get_job():
+    body = BODY.format(target_dir=pathlib.Path(__file__).parent.parent)
     return HEADER + body + FOOTER
