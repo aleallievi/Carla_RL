@@ -119,6 +119,9 @@ class PPO_Agent(nn.Module):
         mes = torch.FloatTensor(mes)
         return mes
 
+    def format_state (self,s):
+        return format_frame(s[0]), format_mes(s[1:])
+
     def discount_rewards(self,r, gamma, terminals):
         """ take 1D float array of rewards and compute discounted reward """
         # from https://github.com/GoogleCloudPlatform/tensorflow-without-a-phd/blob/master/tensorflow-rl-pong/trainer/helpers.py
@@ -133,7 +136,7 @@ class PPO_Agent(nn.Module):
             discounted_r[t] = running_add
         return discounted_r.tolist()
 
-    def train(memory,prev_policy):
+    def train(self,memory,prev_policy):
         returns = self.discount_rewards(memory.rewards, self.gamma, memory.terminals)
         returns = torch.tensor(returns).to(device)
         actions_log_probs = torch.FloatTensor(memory.actions_log_probs).to(device)
