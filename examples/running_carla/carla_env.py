@@ -231,7 +231,7 @@ class CarlaEnv(object):
         # print (sensor_queue.queue)
         # print ("\n")
         sensor_queue = sensor_queue.queue
-        while not sensor_queue.empty():
+        while True:
             data = sensor_queue.get(block=True, timeout=timeout)
             if data.frame == self.frame:
                 sensor_queue.task_done()
