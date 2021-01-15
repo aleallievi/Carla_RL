@@ -1,18 +1,11 @@
-import collections
-import queue
 import numpy as np
-import cv2
 import carla
 import argparse
 import logging
 import time
-import math
 import random
 import sys
 import torch
-import torch.nn as nn
-from torch.optim import Adam
-from torch.distributions import MultivariateNormal
 import wandb
 import copy
 import carla
@@ -60,7 +53,6 @@ class Memory():
         terminals.clear()
 
 def train_model(args):
-    wandb.init(project='PPO_Carla_Navigation')
     n_iters = 10000
     n_epochs = 50
     max_steps = 2000
@@ -74,15 +66,16 @@ def train_model(args):
     n_actions = 2
     action_std = 0.5
 
-    config = wandb.config
-    config.learning_rate = lr
-
     #init models
     policy = PPO_Agent(n_states, n_actions, action_std,lr, gamma, n_epochs,clip_val).to(device)
     prev_policy = PPO_Agent(n_states, n_actions, action_std,lr, gamma, n_epochs,clip_val).to(device)
     prev_policy.load_state_dict(policy.state_dict())
     memory = Memory()
 
+    #start WANDB logging
+    wandb.init(project='PPO_Carla_Navigation')
+    config = wandb.config
+    config.learning_rate = lr
     wandb.watch(prev_policy)
 
     batch_ep_returns = []
@@ -110,7 +103,7 @@ def train_model(args):
             timestep_mod = total_timesteps // update_timestep
 
             if timestep_mod > prev_timestep_mod:
-                prev_policy = policy.train(memory, prev_policy)
+                prev_policy = policy.train(memory, prev_policy,iters)
                 memory.clear()
 
                 avg_batch_ep_returns = sum(batch_ep_returns)/len(batch_ep_returns)

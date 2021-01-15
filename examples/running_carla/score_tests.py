@@ -13,10 +13,8 @@ actors or environmental parameters. Hence, a termination is not required.
 The atomic criteria are implemented with py_trees.
 """
 
-import weakref
 import math
 import numpy as np
-import py_trees
 import shapely
 
 import carla

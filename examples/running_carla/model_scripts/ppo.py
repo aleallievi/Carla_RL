@@ -136,7 +136,7 @@ class PPO_Agent(nn.Module):
             discounted_r[t] = running_add
         return discounted_r.tolist()
 
-    def train(self,memory,prev_policy):
+    def train(self,memory,prev_policy,iters):
         returns = self.discount_rewards(memory.rewards, self.gamma, memory.terminals)
         returns = torch.tensor(returns).to(device)
         actions_log_probs = torch.FloatTensor(memory.actions_log_probs).to(device)
@@ -157,11 +157,11 @@ class PPO_Agent(nn.Module):
                 + (0.5 * loss_v) \
                 - (0.01 * entropies)
 
-                    self.optimizer.zero_grad()
-                    loss.mean().backward()
-                    self.optimizer.step()
-                    if i % 10 == 0:
-                        print("    on epoch " + str(i))
+            self.optimizer.zero_grad()
+            loss.mean().backward()
+            self.optimizer.step()
+            if i % 10 == 0:
+                print("    on epoch " + str(i))
 
             if iters % 50 == 0:
                 torch.save(self.state_dict(), "vanilla_policy_state_dictionary.pt")

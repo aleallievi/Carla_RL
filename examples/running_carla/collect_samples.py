@@ -1,4 +1,3 @@
-
 import carla
 import cv2
 import argparse
@@ -11,7 +10,6 @@ height = 480
 width = 640
 fov = 10
 FPS = 60
-
 
 def process_img(img,iter):
     print ("processing image...")
@@ -73,13 +71,6 @@ def main(n_vehicles, host, world_port, tm_port):
             sensor = world.spawn_actor(rgb_cam, sensor_pos, attach_to=vehicle)
             sensors.append(sensor)
             sensor.listen(lambda data: process_img(data,iter))
-
-
-#        for response in client.apply_batch_sync(batch, True):
-#            if response.error:
-#                print(response.error)
-#            else:
-#                vehicles.append(response.actor_id)
 
         # let them run around.
         for sample in range(10000):
