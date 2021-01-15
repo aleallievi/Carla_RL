@@ -17,40 +17,40 @@ from ppo import PPO_Agent
 global device
 
 class Memory():
-    rewards = []
-    eps_frames = []
-    eps_frames_raw = []
-    eps_mes = []
-    eps_mes_raw = []
-    actions = []
-    actions_log_probs = []
-    states_p = []
-    terminals = []
+    self.rewards = []
+    self.eps_frames = []
+    self.eps_frames_raw = []
+    self.eps_mes = []
+    self.eps_mes_raw = []
+    self.actions = []
+    self.actions_log_probs = []
+    self.states_p = []
+    self.terminals = []
 
     def add(self,s,a,a_log_prob,reward,s_prime,done):
-        eps_frames.append(format_frame(s[0]).detach().clone())
-        eps_frames_raw.append(copy.deepcopy(s[0]))
-        eps_mes.append(format_mes(s[1:]).detach().clone())
-        eps_mes_raw.append(copy.deepcopy(s[1:]))
-        actions.append(a.detach().clone())
-        actions_log_probs.append(a_log_prob.detach().clone())
-        rewards.append(copy.deepcopy(reward))
-        states_p.append(copy.deepcopy(s_prime))
-        terminals.append(copy.deepcopy(done))
+        self.eps_frames.append(format_frame(s[0]).detach().clone())
+        self.eps_frames_raw.append(copy.deepcopy(s[0]))
+        self.eps_mes.append(format_mes(s[1:]).detach().clone())
+        self.eps_mes_raw.append(copy.deepcopy(s[1:]))
+        self.actions.append(a.detach().clone())
+        self.actions_log_probs.append(a_log_prob.detach().clone())
+        self.rewards.append(copy.deepcopy(reward))
+        self.states_p.append(copy.deepcopy(s_prime))
+        self.terminals.append(copy.deepcopy(done))
 
     def clear (self):
-        rewards = list(rewards.numpy())
-        actions_log_probs = list(actions_log_probs.numpy())
+        self.rewards = list(self.rewards.numpy())
+        self.actions_log_probs = list(self.actions_log_probs.numpy())
 
-        rewards.clear()
-        eps_frames.clear()
-        eps_frames_raw.clear()
-        eps_mes.clear()
-        eps_mes_raw.clear()
-        actions.clear()
-        actions_log_probs.clear()
-        states_p.clear()
-        terminals.clear()
+        self.rewards.clear()
+        self.eps_frames.clear()
+        self.eps_frames_raw.clear()
+        self.eps_mes.clear()
+        self.eps_mes_raw.clear()
+        self.actions.clear()
+        self.actions_log_probs.clear()
+        self.states_p.clear()
+        self.terminals.clear()
 
 def train_model(args):
     n_iters = 10000
