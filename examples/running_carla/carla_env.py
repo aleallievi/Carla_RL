@@ -227,7 +227,7 @@ class CarlaEnv(object):
             self.n_img = 0
 
     def _retrieve_data(self, sensor_queue, timeout):
-        while True:
+        while not sensor_queue.empty():
             data = sensor_queue.get(block=True, timeout=timeout)
             if data.frame == self.frame:
                 sensor_queue.task_done()
@@ -264,8 +264,8 @@ class CarlaEnv(object):
         velocity_mag = np.sqrt(np.power(velocity.x, 2) + np.power(velocity.y, 2) + np.power(velocity.z, 2))
         self.cur_velocity = velocity_mag
 
-        print ("QUEUE")
-        print (self._queues[0].queue)
+        # print ("QUEUE")
+        # print (self._queues[0].queue)
 
         state = [self._retrieve_data(q, timeout) for q in self._queues]
         assert all(x.frame == self.frame for x in state)
