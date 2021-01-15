@@ -15,7 +15,7 @@ from torch.optim import Adam
 from torch.distributions import MultivariateNormal
 
 class PPO_Agent(nn.Module):
-    def __init__(self, linear_state_dim, action_dim, action_std,lr, gamma, n_epochs,clip_val):
+    def __init__(self, linear_state_dim, action_dim, action_std,lr, gamma, n_epochs,clip_val,device):
         super(PPO_Agent, self).__init__()
         # action mean range -1 to 1
         self.actorConv = nn.Sequential(
@@ -52,7 +52,8 @@ class PPO_Agent(nn.Module):
                 nn.Tanh(),
                 nn.Linear(32, 1)
                 )
-        self.action_var = torch.full((action_dim,), action_std*action_std).to(device)
+        self.device = device
+        self.action_var = torch.full((action_dim,), action_std*action_std).to(self.device)
 
         self.optimizer = Adam(self.parameters(), lr=lr)
         self.mse = nn.MSELoss()

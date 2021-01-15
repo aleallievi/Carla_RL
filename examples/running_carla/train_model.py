@@ -67,8 +67,8 @@ def train_model(args):
     action_std = 0.5
 
     #init models
-    policy = PPO_Agent(n_states, n_actions, action_std,lr, gamma, n_epochs,clip_val).to(device)
-    prev_policy = PPO_Agent(n_states, n_actions, action_std,lr, gamma, n_epochs,clip_val).to(device)
+    policy = PPO_Agent(n_states, n_actions, action_std,lr, gamma, n_epochs,clip_val,device).to(device)
+    prev_policy = PPO_Agent(n_states, n_actions, action_std,lr, gamma, n_epochs,clip_val,device).to(device)
     prev_policy.load_state_dict(policy.state_dict())
     memory = Memory()
 
