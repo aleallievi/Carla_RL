@@ -17,15 +17,16 @@ from ppo import PPO_Agent
 global device
 
 class Memory():
-    self.rewards = []
-    self.eps_frames = []
-    self.eps_frames_raw = []
-    self.eps_mes = []
-    self.eps_mes_raw = []
-    self.actions = []
-    self.actions_log_probs = []
-    self.states_p = []
-    self.terminals = []
+    def __init__():
+        self.rewards = []
+        self.eps_frames = []
+        self.eps_frames_raw = []
+        self.eps_mes = []
+        self.eps_mes_raw = []
+        self.actions = []
+        self.actions_log_probs = []
+        self.states_p = []
+        self.terminals = []
 
     def add(self,s,a,a_log_prob,reward,s_prime,done):
         self.eps_frames.append(format_frame(s[0]).detach().clone())
