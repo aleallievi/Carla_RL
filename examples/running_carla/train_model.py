@@ -17,14 +17,14 @@ from ppo import PPO_Agent
 global device
 
 class Memory():
-    def __init__():
+    def __init__(self):
         self.rewards = []
         self.eps_frames = []
         self.eps_frames_raw = []
         self.eps_mes = []
         self.eps_mes_raw = []
         self.actions = []
-        self.actions_log_probs = []
+        self.actions_log_proßbs = []
         self.states_p = []
         self.terminals = []
 
