@@ -152,7 +152,7 @@ if __name__ == '__main__':
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--world-port', type=int, required=True)
     parser.add_argument('--tm-port', type=int, required=True)
-    parser.add_argument('--n_vehicles', type=int, default=1)
-    parser.add_argument('--client_timeout', type=int, default=10)
+    parser.add_argument('--n-vehicles', type=int, default=1)
+    parser.add_argument('--client-timeout', type=int, default=10)
 
     main(parser.parse_args())
