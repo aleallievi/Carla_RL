@@ -227,6 +227,9 @@ class CarlaEnv(object):
             self.n_img = 0
 
     def _retrieve_data(self, sensor_queue, timeout):
+        print (sensor_queue.qsize)
+        print (sensor_queue.queue)
+        print ("\n")
         while not sensor_queue.empty():
             data = sensor_queue.get(block=True, timeout=timeout)
             if data.frame == self.frame:
