@@ -264,6 +264,9 @@ class CarlaEnv(object):
         velocity_mag = np.sqrt(np.power(velocity.x, 2) + np.power(velocity.y, 2) + np.power(velocity.z, 2))
         self.cur_velocity = velocity_mag
 
+        print ("QUEUE")
+        print (self._queues)
+        
         state = [self._retrieve_data(q, timeout) for q in self._queues]
         assert all(x.frame == self.frame for x in state)
         state = [self.process_img(img, 80, 80) for img in state]
