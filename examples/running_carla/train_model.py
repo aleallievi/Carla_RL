@@ -28,11 +28,11 @@ class Memory():
         self.states_p = []
         self.terminals = []
 
-    def add(self,s,a,a_log_prob,reward,s_prime,done):
-        self.eps_frames.append(format_frame(s[0]).detach().clone())
-        self.eps_frames_raw.append(copy.deepcopy(s[0]))
-        self.eps_mes.append(format_mes(s[1:]).detach().clone())
-        self.eps_mes_raw.append(copy.deepcopy(s[1:]))
+    def add(self,frame,mes,raw_frame,raw_mes,a,a_log_prob,reward,s_prime,done):
+        self.eps_frames.append(frame.detach().clone())
+        self.eps_frames_raw.append(copy.deepcopy(raw_frame))
+        self.eps_mes.append(mes.detach().clone())
+        self.eps_mes_raw.append(copy.deepcopy(raw_mes))
         self.actions.append(a.detach().clone())
         self.actions_log_probs.append(a_log_prob.detach().clone())
         self.rewards.append(copy.deepcopy(reward))
@@ -93,7 +93,7 @@ def train_model(args):
                 a, a_log_prob = prev_policy.choose_action(frame,mes)
                 s_prime, reward, done, info = env.step(action=a.detach().tolist(), timeout=2)
 
-                memory.add(s,a,a_log_prob,reward,s_prime,done)
+                memory.add(frame, mes,s[0],s[1:],a,a_log_prob,reward,s_prime,done)
 
                 s = copy.deepcopy(s_prime)
                 t += 1
@@ -124,7 +124,7 @@ def train_model(args):
                     "number_of_times_vehicle_blocked": info[5],
                     "timesteps before termination": t,
                     'Sample image': [
-                        wandb.Image(eps_frames_raw[img][0], caption=f'Img#: {len(eps_frames_raw) * (-img)}') for img in
+                        wandb.Image(memory.eps_frames_raw[img][0], caption=f'Img#: {len(memory.eps_frames_raw) * (-img)}') for img in
                         [0, -1]],
                 })
 
