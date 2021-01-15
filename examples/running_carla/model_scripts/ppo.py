@@ -64,8 +64,8 @@ class PPO_Agent(nn.Module):
 
 
     def actor(self, frame, mes):
-        frame = frame.to(device)
-        mes = mes.to(device)
+        frame = frame.to(self.device)
+        mes = mes.to(self.device)
         if len(list(mes.size())) == 1:
             mes = mes.unsqueeze(0)
         vec = self.actorConv(frame)
@@ -73,8 +73,8 @@ class PPO_Agent(nn.Module):
         return self.actorLin(X)
 
     def critic(self, frame, mes):
-        frame = frame.to(device)
-        mes = mes.to(device)
+        frame = frame.to(self.device)
+        mes = mes.to(self.device)
         if len(list(mes.size())) == 1:
             mes = mes.unsqueeze(0)
         vec = self.criticConv(frame)
@@ -84,7 +84,7 @@ class PPO_Agent(nn.Module):
     def choose_action(self, frame, mes):
         with torch.no_grad():
             mean = self.actor(frame, mes)
-            cov_matrix = torch.diag(self.action_var).to(device)
+            cov_matrix = torch.diag(self.action_var).to(self.device)
             gauss_dist = MultivariateNormal(mean, cov_matrix)
             action = gauss_dist.sample()
             action_log_prob = gauss_dist.log_prob(action)
@@ -102,12 +102,12 @@ class PPO_Agent(nn.Module):
 
         mean = self.actor(frame, mes)
         action_expanded = self.action_var.expand_as(mean)
-        cov_matrix = torch.diag_embed(action_expanded).to(device)
+        cov_matrix = torch.diag_embed(action_expanded).to(self.device)
 
         gauss_dist = MultivariateNormal(mean, cov_matrix)
-        action_log_prob = gauss_dist.log_prob(action).to(device)
-        entropy = gauss_dist.entropy().to(device)
-        state_value = torch.squeeze(self.critic(frame, mes)).to(device)
+        action_log_prob = gauss_dist.log_prob(action).to(self.device)
+        entropy = gauss_dist.entropy().to(self.device)
+        state_value = torch.squeeze(self.critic(frame, mes)).to(self.device)
         return action_log_prob, state_value, entropy
 
     def format_frame(self,frame):
@@ -121,7 +121,7 @@ class PPO_Agent(nn.Module):
         return mes
 
     def format_state (self,s):
-        return format_frame(s[0]), format_mes(s[1:])
+        return self.format_frame(s[0]), self.format_mes(s[1:])
 
     def discount_rewards(self,r, gamma, terminals):
         """ take 1D float array of rewards and compute discounted reward """
@@ -139,8 +139,8 @@ class PPO_Agent(nn.Module):
 
     def train(self,memory,prev_policy,iters):
         returns = self.discount_rewards(memory.rewards, self.gamma, memory.terminals)
-        returns = torch.tensor(returns).to(device)
-        actions_log_probs = torch.FloatTensor(memory.actions_log_probs).to(device)
+        returns = torch.tensor(returns).to(self.device)
+        actions_log_probs = torch.FloatTensor(memory.actions_log_probs).to(self.device)
 
         #train PPO
         for i in range(self.n_epochs):
