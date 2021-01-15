@@ -80,6 +80,7 @@ def train_model(args):
     wandb.watch(prev_policy)
 
     batch_ep_returns = []
+    timestep_mod = 0
 
     for iters in range(n_iters):
         with CarlaEnv(args,save_video=False) as env:
