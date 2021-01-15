@@ -88,7 +88,8 @@ def train_model(args):
             done = False
 
             while not done:
-                a, a_log_prob = prev_policy.choose_action(prev_policy.format_state(s))
+                frame,mes = prev_policy.format_state(s)
+                a, a_log_prob = prev_policy.choose_action(frame,mes)
                 s_prime, reward, done, info = env.step(action=a.detach().tolist(), timeout=2)
 
                 memory.add(s,a,a_log_prob,reward,s_prime,done)
