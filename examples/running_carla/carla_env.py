@@ -265,7 +265,7 @@ class CarlaEnv(object):
         self.cur_velocity = velocity_mag
 
         print ("QUEUE")
-        print (list(self._queues[0]))
+        print (self._queues[0].queue)
 
         state = [self._retrieve_data(q, timeout) for q in self._queues]
         assert all(x.frame == self.frame for x in state)
