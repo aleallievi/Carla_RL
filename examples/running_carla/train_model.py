@@ -81,6 +81,8 @@ def train_model(args):
 
     batch_ep_returns = []
     timestep_mod = 0
+    total_timesteps = 0
+    update_timestep = 2000
 
     for iters in range(n_iters):
         with CarlaEnv(args,save_video=False) as env:
@@ -98,6 +100,7 @@ def train_model(args):
 
                 s = copy.deepcopy(s_prime)
                 t += 1
+                total_timesteps +=1
                 episode_return += reward
 
             # TODO change this hack to calculate when PPO training is triggered, look at PPO batch
