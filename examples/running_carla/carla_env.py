@@ -230,7 +230,7 @@ class CarlaEnv(object):
         # print (sensor_queue.queue.qsize)
         # print (sensor_queue.queue)
         # print ("\n")
-        sensor_queue = sensor_queue.queue
+        #sensor_queue = sensor_queue.queue
         while True:
             data = sensor_queue.get(block=True, timeout=timeout)
             if data.frame == self.frame:
@@ -271,8 +271,9 @@ class CarlaEnv(object):
         # print ("QUEUE")
         # print (self._queues[0].queue)
 
-        state = [self._retrieve_data(q, timeout) for q in self._queues]
-        assert all(x.frame == self.frame for x in state)
+        # state = [self._retrieve_data(q, timeout) for q in self._queues]
+        # assert all(x.frame == self.frame for x in state)
+        state = [self.frame]
         state = [self.process_img(img, 80, 80) for img in state]
         state = [state, velocity_mag, d2target, rotation.pitch, rotation.yaw, rotation.roll]
         state.extend(command_encoded)
