@@ -24,7 +24,7 @@ class Memory():
         self.eps_mes = []
         self.eps_mes_raw = []
         self.actions = []
-        self.actions_log_proßbs = []
+        self.actions_log_probs = []
         self.states_p = []
         self.terminals = []
 
