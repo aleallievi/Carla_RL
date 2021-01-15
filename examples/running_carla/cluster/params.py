@@ -2,7 +2,7 @@ import pathlib
 
 
 # change these.
-CLUSTER_QUICKSTART_DIR = '/scratch/cluster/stephane/cluster_quickstart'
+CLUSTER_QUICKSTART_DIR = '/scratch/cluster/stephane/Carla_RL'
 CARLA_DIR = '/scratch/cluster/stephane/Carla_0.9.10'
 
 HEADER = f"""#!/bin/bash
