@@ -53,6 +53,33 @@ class Memory():
         self.states_p.clear()
         self.terminals.clear()
 
+    def reservoir_sample(self,k):
+        eps_frames_reservoir = []
+        eps_mes_reservoir = []
+        actions_reservoir = []
+        actions_log_probs_reservoir = []
+        rewards_reservoir = []
+        terminals_reservoir = []
+
+        for i in range (len(self.eps_frames)):
+            if len(eps_frames_reservoir) < k:
+                eps_frames_reservoir.append(self.eps_frames[i])
+                eps_mes_reservoir.append(self.eps_mes[i])
+                actions_reservoir.append(self.actions[i])
+                actions_log_probs_reservoir.append(self.actions_log_probs[i])
+                rewards_reservoir.append(self.rewards[i])
+                terminals_reservoir.append(self.terminals[i])
+            else:
+                j = int(random.uniform(0,i))
+                if j < k:
+                    eps_frames_reservoir[j] = self.eps_frames[i]
+                    eps_mes_reservoir[j] = self.eps_mes[i]
+                    actions_reservoir[j] = self.actions[i]
+                    actions_log_probs_reservoir[j] = self.actions_log_probs[i]
+                    rewards_reservoir[j] = self.rewards[i]
+                    terminals_reservoir[j] = self.terminals[i]
+        return eps_frames_reservoir,eps_mes_reservoir,actions_reservoir,actions_log_probs_reservoir,rewards_reservoir,terminals_reservoir
+
 def train_model(args):
     n_iters = 10000
     n_epochs = 50

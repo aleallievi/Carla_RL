@@ -138,33 +138,36 @@ class PPO_Agent(nn.Module):
         return discounted_r.tolist()
 
     def train(self,memory,prev_policy,iters):
-        returns = self.discount_rewards(memory.rewards, self.gamma, memory.terminals)
-        returns = torch.tensor(returns).to(self.device)
-        actions_log_probs = torch.FloatTensor(memory.actions_log_probs).to(self.device)
+        for n in range (10):
+            eps_frames, eps_mes,actions,actions_log_probs, rewards, rewards= memory.reservoir_sample(64)
 
-        #train PPO
-        for i in range(self.n_epochs):
-            current_action_log_probs, state_values, entropies = self.get_training_params(memory.eps_frames, memory.eps_mes, memory.actions)
-            policy_ratio = torch.exp(current_action_log_probs - actions_log_probs.detach())
-            advantage = returns - state_values.detach()
-            advantage = (advantage - advantage.mean()) / advantage.std()
-            adv_l_update1 = policy_ratio*advantage.float()
-            adv_l_update2 = (torch.clamp(policy_ratio, 1-self.clip_val, 1+self.clip_val) * advantage).float()
-            adv_l = torch.min(adv_l_update1, adv_l_update2)
-            loss_v = self.mse(state_values.float(), returns.float())
+            returns = self.discount_rewards(rewards, self.gamma,rewards)
+            returns = torch.tensor(returns).to(self.device)
+            actions_log_probs = torch.FloatTensor(actions_log_probs).to(self.device)
 
-            loss = \
-                - adv_l \
-                + (0.5 * loss_v) \
-                - (0.01 * entropies)
+            #train PPO
+            for i in range(self.n_epochs):
+                current_action_log_probs, state_values, entropies = self.get_training_params(eps_frames, eps_mes, actions)
+                policy_ratio = torch.exp(current_action_log_probs - actions_log_probs.detach())
+                advantage = returns - state_values.detach()
+                advantage = (advantage - advantage.mean()) / advantage.std()
+                adv_l_update1 = policy_ratio*advantage.float()
+                adv_l_update2 = (torch.clamp(policy_ratio, 1-self.clip_val, 1+self.clip_val) * advantage).float()
+                adv_l = torch.min(adv_l_update1, adv_l_update2)
+                loss_v = self.mse(state_values.float(), returns.float())
 
-            self.optimizer.zero_grad()
-            loss.mean().backward()
-            self.optimizer.step()
-            if i % 10 == 0:
-                print("    on epoch " + str(i))
+                loss = \
+                    - adv_l \
+                    + (0.5 * loss_v) \
+                    - (0.01 * entropies)
 
-            if iters % 50 == 0:
-                torch.save(self.state_dict(), "vanilla_policy_state_dictionary.pt")
-            prev_policy.load_state_dict(self.state_dict())
-            return prev_policy
+                self.optimizer.zero_grad()
+                loss.mean().backward()
+                self.optimizer.step()
+
+            print("    on epoch " + str(n))
+
+        if iters % 50 == 0:
+            torch.save(self.state_dict(), "vanilla_policy_state_dictionary.pt")
+        prev_policy.load_state_dict(self.state_dict())
+        return prev_policy
