@@ -137,11 +137,19 @@ class PPO_Agent(nn.Module):
             discounted_r[t] = running_add
         return discounted_r.tolist()
 
+    def compute_advantages(self, memory):
+        current_action_log_probs, state_values, entropies = self.get_training_params(memory.se_eps_frames, memory.se_eps_mes, memory.se_actions)
+        returns = self.discount_rewards(memory.se_rewards, self.gamma, memory.se_terminals)
+        returns = torch.tensor(returns).to(self.device)
+        advantage = returns - state_values.detach()
+        advantage = (advantage - advantage.mean()) / advantage.std()
+        return advantage
+
     def train(self,memory,prev_policy,iters):
         for n in range (10):
-            eps_frames, eps_mes,actions,actions_log_probs, rewards, rewards= memory.reservoir_sample(64)
+            eps_frames, eps_mes,actions,actions_log_probs,rewards,terminals,advantage= memory.reservoir_sample(64)
 
-            returns = self.discount_rewards(rewards, self.gamma,rewards)
+            returns = self.discount_rewards(rewards, self.gamma,terminals)
             returns = torch.tensor(returns).to(self.device)
             actions_log_probs = torch.FloatTensor(actions_log_probs).to(self.device)
 
@@ -149,8 +157,7 @@ class PPO_Agent(nn.Module):
             for i in range(self.n_epochs):
                 current_action_log_probs, state_values, entropies = self.get_training_params(eps_frames, eps_mes, actions)
                 policy_ratio = torch.exp(current_action_log_probs - actions_log_probs.detach())
-                advantage = returns - state_values.detach()
-                advantage = (advantage - advantage.mean()) / advantage.std()
+
                 adv_l_update1 = policy_ratio*advantage.float()
                 adv_l_update2 = (torch.clamp(policy_ratio, 1-self.clip_val, 1+self.clip_val) * advantage).float()
                 adv_l = torch.min(adv_l_update1, adv_l_update2)

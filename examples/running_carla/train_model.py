@@ -18,6 +18,7 @@ global device
 
 class Memory():
     def __init__(self):
+        #data for entire rollout
         self.rewards = []
         self.eps_frames = []
         self.eps_frames_raw = []
@@ -27,6 +28,18 @@ class Memory():
         self.actions_log_probs = []
         self.states_p = []
         self.terminals = []
+        self.advantages = []
+
+        #single episdoe data
+        self.se_rewards = []
+        self.se_eps_frames = []
+        self.se_eps_frames_raw = []
+        self.se_eps_mes = []
+        self.se_eps_mes_raw = []
+        self.se_actions = []
+        self.se_actions_log_probs = []
+        self.se_states_p = []
+        self.se_terminals = []
 
     def add(self,frame,mes,raw_frame,raw_mes,a,a_log_prob,reward,s_prime,done):
         self.eps_frames.append(frame.detach().clone())
@@ -38,6 +51,20 @@ class Memory():
         self.rewards.append(copy.deepcopy(reward))
         self.states_p.append(copy.deepcopy(s_prime))
         self.terminals.append(copy.deepcopy(done))
+
+    def se_add(self,frame,mes,raw_frame,raw_mes,a,a_log_prob,reward,s_prime,done):
+        self.se_eps_frames.append(frame.detach().clone())
+        self.se_eps_frames_raw.append(copy.deepcopy(raw_frame))
+        self.se_eps_mes.append(mes.detach().clone())
+        self.se_eps_mes_raw.append(copy.deepcopy(raw_mes))
+        self.se_actions.append(a.detach().clone())
+        self.se_actions_log_probs.append(a_log_prob.detach().clone())
+        self.se_rewards.append(copy.deepcopy(reward))
+        self.se_states_p.append(copy.deepcopy(s_prime))
+        self.se_terminals.append(copy.deepcopy(done))
+
+    def add_advantages(self,advantages):
+        self.advantages.extend(advantages)
 
     def clear (self):
         self.rewards = list(self.rewards.numpy())
@@ -52,6 +79,22 @@ class Memory():
         self.actions_log_probs.clear()
         self.states_p.clear()
         self.terminals.clear()
+        self.advantages.clear()
+
+    def se_clear(self):
+        self.se_rewards = list(self.se_rewards.numpy())
+        self.se_actions_log_probs = list(self.se_actions_log_probs.numpy())
+
+        self.se_rewards.clear()
+        self.se_eps_frames.clear()
+        self.se_eps_frames_raw.clear()
+        self.se_eps_mes.clear()
+        self.se_eps_mes_raw.clear()
+        self.se_actions.clear()
+        self.se_actions_log_probs.clear()
+        self.se_states_p.clear()
+        self.se_terminals.clear()
+
 
     def reservoir_sample(self,k):
         eps_frames_reservoir = []
@@ -60,6 +103,7 @@ class Memory():
         actions_log_probs_reservoir = []
         rewards_reservoir = []
         terminals_reservoir = []
+        advantages_reservoir = []
 
         for i in range (len(self.eps_frames)):
             if len(eps_frames_reservoir) < k:
@@ -69,6 +113,7 @@ class Memory():
                 actions_log_probs_reservoir.append(self.actions_log_probs[i])
                 rewards_reservoir.append(self.rewards[i])
                 terminals_reservoir.append(self.terminals[i])
+                advantages_reservoir.append(self.advantages[i])
             else:
                 j = int(random.uniform(0,i))
                 if j < k:
@@ -78,7 +123,8 @@ class Memory():
                     actions_log_probs_reservoir[j] = self.actions_log_probs[i]
                     rewards_reservoir[j] = self.rewards[i]
                     terminals_reservoir[j] = self.terminals[i]
-        return eps_frames_reservoir,eps_mes_reservoir,actions_reservoir,actions_log_probs_reservoir,rewards_reservoir,terminals_reservoir
+                    advantages_reservoir[j] = self.advantages[i]
+        return eps_frames_reservoir,eps_mes_reservoir,actions_reservoir,actions_log_probs_reservoir,rewards_reservoir,terminals_reservoir,advantages_reservoir
 
 def train_model(args):
     n_iters = 10000
@@ -124,11 +170,17 @@ def train_model(args):
                 s_prime, reward, done, info = env.step(action=a.detach().tolist(), timeout=2)
 
                 memory.add(frame, mes,s[0],s[1:],a,a_log_prob,reward,s_prime,done)
+                memory.se_add(frame, mes,s[0],s[1:],a,a_log_prob,reward,s_prime,done)
 
                 s = copy.deepcopy(s_prime)
                 t += 1
                 total_timesteps +=1
                 episode_return += reward
+
+            #compute episode advtanages using the single episodes collected data
+            memory.add_advantages(policy.compute_advantages(memory))
+            #clear single episodes collected data
+            memory.se_clear()
 
             # TODO change this hack to calculate when PPO training is triggered, look at PPO batch
             batch_ep_returns.append(episode_return)
