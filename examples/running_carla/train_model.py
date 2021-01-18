@@ -14,7 +14,8 @@ from carla_env import CarlaEnv
 sys.path.append("model_scripts/")
 from ppo import PPO_Agent
 
-global device
+global
+device
 
 class Memory():
     def __init__(self):
@@ -67,8 +68,8 @@ class Memory():
         self.advantages.extend(advantages)
 
     def clear (self):
-        self.rewards = list(self.rewards.numpy())
-        self.actions_log_probs = list(self.actions_log_probs.numpy())
+        #self.rewards = list(self.rewards.numpy())
+        #self.actions_log_probs = list(self.actions_log_probs.numpy())
 
         self.rewards.clear()
         self.eps_frames.clear()
@@ -82,8 +83,8 @@ class Memory():
         self.advantages.clear()
 
     def se_clear(self):
-        self.se_rewards = list(self.se_rewards.numpy())
-        self.se_actions_log_probs = list(self.se_actions_log_probs.numpy())
+        #self.se_rewards = list(self.se_rewards.numpy())
+        #self.se_actions_log_probs = list(self.se_actions_log_probs.numpy())
 
         self.se_rewards.clear()
         self.se_eps_frames.clear()
@@ -154,6 +155,7 @@ def train_model(args):
 
     batch_ep_returns = []
     timestep_mod = 0
+    train_iters = 0
     total_timesteps = 0
     update_timestep = 2000
 
@@ -189,7 +191,6 @@ def train_model(args):
 
             if timestep_mod > prev_timestep_mod:
                 prev_policy = policy.train(memory, prev_policy,iters)
-                memory.clear()
 
                 avg_batch_ep_returns = sum(batch_ep_returns)/len(batch_ep_returns)
                 moving_avg = (avg_batch_ep_returns - moving_avg) * (2 / (train_iters + 2)) + avg_batch_ep_returns
@@ -210,6 +211,7 @@ def train_model(args):
                         wandb.Image(memory.eps_frames_raw[img][0], caption=f'Img#: {len(memory.eps_frames_raw) * (-img)}') for img in
                         [0, -1]],
                 })
+                memory.clear()
 
 def launch_client(args):
     client = carla.Client(args.host, args.world_port)

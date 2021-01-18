@@ -134,6 +134,7 @@ class CarlaEnv(object):
         print('car agent spawned')
         self._setup_sensors()
         print('sensors created')
+        #TODO: Ciuld this be causing problems?
         for i in range(10):
             self._world.tick()
 
@@ -233,6 +234,9 @@ class CarlaEnv(object):
         #sensor_queue = sensor_queue.queue
         while True:
             data = sensor_queue.get(block=True, timeout=timeout)
+            print (data.frame)
+            print (self.frame)
+            print ("\n")
             if data.frame == self.frame:
                 sensor_queue.task_done()
                 # print(self.frame)
