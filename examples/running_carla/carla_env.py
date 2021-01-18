@@ -135,8 +135,8 @@ class CarlaEnv(object):
         self._setup_sensors()
         print('sensors created')
         #TODO: Ciuld this be causing problems?
-        for i in range(10):
-            self._world.tick()
+        # for i in range(10):
+        #     self._world.tick()
 
         # create random target to reach
         np.random.seed(6)

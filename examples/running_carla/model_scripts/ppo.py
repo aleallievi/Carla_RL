@@ -91,13 +91,8 @@ class PPO_Agent(nn.Module):
         return action, action_log_prob
 
     def get_training_params(self, frame, mes, action):
-        frame = torch.stack(frame)
-        mes = torch.stack(mes)
-        if len(list(frame.size())) > 4:
-            frame = torch.squeeze(frame)
-        if len(list(mes.size())) > 2:
-            mes = torch.squeeze(mes)
-
+        frame = torch.squeeze(torch.stack(frame))
+        mes = torch.squeeze(torch.stack(mes))
         action = torch.stack(action)
 
         mean = self.actor(frame, mes)
@@ -175,6 +170,6 @@ class PPO_Agent(nn.Module):
             print("    on epoch " + str(n))
 
         if iters % 50 == 0:
-            torch.save(self.state_dict(), "vanilla_policy_state_dictionary.pt")
+            torch.save(self.state_dict(), "../model_files/vanilla_policy_state_dictionary.pt")
         prev_policy.load_state_dict(self.state_dict())
         return prev_policy
