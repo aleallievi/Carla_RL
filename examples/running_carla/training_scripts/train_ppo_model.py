@@ -10,9 +10,9 @@ import wandb
 import copy
 import carla
 
-sys.path.append("../Carla/")
+sys.path.append("/examples/running_carla/Carla/")
 from carla_env import CarlaEnv
-sys.path.append("../model_scripts/")
+sys.path.append("/examples/running_carla/model_scripts/")
 from ppo import PPO_Agent
 
 global device
