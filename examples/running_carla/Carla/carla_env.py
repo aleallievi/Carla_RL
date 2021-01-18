@@ -256,9 +256,11 @@ class CarlaEnv(object):
         if self._tick > self.MAX_EP_LENGTH or self.infractions_test.colllided_w_static:
             done = True
             self.infractions_test.events.append([TrafficEventType.ROUTE_COMPLETION, dist_completed])
+            self._world.tick()
         elif is_route_completed:
             done = True
             self.infractions_test.events.append([TrafficEventType.ROUTE_COMPLETED])
+            self._world.tick()
         else:
             done = False
             self.infractions_test.events.append([TrafficEventType.ROUTE_COMPLETION, dist_completed])
