@@ -62,7 +62,6 @@ class PPO_Agent(nn.Module):
         self.n_epochs = n_epochs
         self.clip_val = clip_val
 
-
     def actor(self, frame, mes):
         frame = frame.to(self.device)
         mes = mes.to(self.device)
@@ -142,7 +141,7 @@ class PPO_Agent(nn.Module):
 
     def train(self,memory,prev_policy,iters):
         for n in range (10):
-            eps_frames, eps_mes,actions,actions_log_probs,rewards,terminals,advantage= memory.reservoir_sample(64)
+            eps_frames, eps_mes,actions,actions_log_probs,rewards,terminals,advantage= memory.reservoir_sample(256)
 
             returns = self.discount_rewards(rewards, self.gamma,terminals)
             returns = torch.tensor(returns).to(self.device)
