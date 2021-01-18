@@ -74,7 +74,7 @@ class CarlaEnv(object):
         self.set_sync_mode(False)
 
     def init(self, randomize=False, i=0):
-        self._settings = self._world.get_settings()    
+        self._settings = self._world.get_settings()
         self.reward = None
 
         # vehicle, sensor
@@ -194,7 +194,7 @@ class CarlaEnv(object):
             self.draw_waypoints(self._world,self.route_waypoints_unformatted)
             #self.cap = cv2.VideoCapture(0)
             fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
-            self.out = cv2.VideoWriter("episode_footage/output_"+str(iter)+".avi", fourcc,FPS, (height+60,width))
+            self.out = cv2.VideoWriter("episode_footage/output_"+str(iter)+".avi", fourcc,FPS, (height+120,width))
             self.n_img = 0
 
     def _retrieve_data(self, sensor_queue, timeout):
@@ -354,13 +354,16 @@ class CarlaEnv(object):
             rgb = rgb[:, :, :3]
             #percent complete
             rgb_mat = cv2.UMat(rgb)
-            rgb_mat = cv2.copyMakeBorder(rgb_mat, 60,0,0,0, cv2.BORDER_CONSTANT, None, 0)
+            rgb_mat = cv2.copyMakeBorder(rgb_mat, 120,0,0,0, cv2.BORDER_CONSTANT, None, 0)
             cv2.putText(rgb_mat, "Route % complete: " + str(self.statistics_manager.route_record['route_percentage']), (2,10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-            cv2.putText(rgb_mat, "Step reward: " + str(self.reward), (2,25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-            cv2.putText(rgb_mat, "Total reward: " + str(self.total_reward), (2,40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-            cv2.putText(rgb_mat, "WP index: " + str(self.statistics_manager._current_index), (2,55), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+            cv2.putText(rgb_mat, "Step reward: " + str(self.reward), (2,30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+            cv2.putText(rgb_mat, "Total reward: " + str(self.total_reward), (2,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+            cv2.putText(rgb_mat, "WP index: " + str(self.statistics_manager._current_index), (2,70), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+            cv2.putText(rgb_mat, "Frame Rate: " + str(self.FRAME_RATE), (2,90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+            cv2.putText(rgb_mat, "Discount: " + "0.99", (2,110), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+
             # rgb = rgb.reshape(480+60,640,3)
-            rgb_mat = cv2.resize(rgb_mat,(480+60,640))
+            rgb_mat = cv2.resize(rgb_mat,(480+120,640))
             self.out.write(rgb_mat)
             #cv2.imwrite("/scratch/cluster/stephane/cluster_quickstart/examples/running_carla/episode_footage/frame_"+str(iter)+str(self.n_img)+".png",rgb)
             self.n_img+=1
