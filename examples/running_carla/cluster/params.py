@@ -25,7 +25,7 @@ sleep 100
 
 BODY = """
 cd {target_dir}
-python3 training_scripts/train_model.py --client-timeout 999 --world-port $WORLD_PORT --tm-port $TM_PORT
+python3 train_model.py --client-timeout 999 --world-port $WORLD_PORT --tm-port $TM_PORT
 """
 
 FOOTER = """
