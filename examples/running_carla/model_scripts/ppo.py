@@ -16,6 +16,10 @@ from torch.distributions import MultivariateNormal
 
 class PPO_Agent(nn.Module):
     def __init__(self, linear_state_dim, action_dim, action_std,lr, gamma, n_epochs,clip_val,device):
+        """
+        Initializes PPO actor critic models
+        """
+
         super(PPO_Agent, self).__init__()
         # action mean range -1 to 1
         self.actorConv = nn.Sequential(
@@ -63,6 +67,11 @@ class PPO_Agent(nn.Module):
         self.clip_val = clip_val
 
     def actor(self, frame, mes):
+        """
+        Input: formatted frame and measurements
+        Output: mean of action probability distribution (as a tensor)
+        """
+
         frame = frame.to(self.device)
         mes = mes.to(self.device)
         if len(list(mes.size())) == 1:
@@ -72,6 +81,11 @@ class PPO_Agent(nn.Module):
         return self.actorLin(X)
 
     def critic(self, frame, mes):
+        """
+        Input: formatted frame and measurements
+        Output: value of current state (as a tensor)
+        """
+
         frame = frame.to(self.device)
         mes = mes.to(self.device)
         if len(list(mes.size())) == 1:
@@ -81,6 +95,11 @@ class PPO_Agent(nn.Module):
         return self.criticLin(X)
 
     def choose_action(self, frame, mes):
+        """
+        Input: formatted frame and measurements
+        Output: formatted action and action log probability (as tensors)
+        """
+
         with torch.no_grad():
             mean = self.actor(frame, mes)
             cov_matrix = torch.diag(self.action_var).to(self.device)
@@ -90,6 +109,11 @@ class PPO_Agent(nn.Module):
         return action, action_log_prob
 
     def get_training_params(self, frame, mes, action):
+        """
+        Input: formatted frame and measurements, and action
+        Output: action log probabilities, state values, and distribution entropy (as tensors)
+        """
+
         frame = torch.squeeze(torch.stack(frame))
         mes = torch.squeeze(torch.stack(mes))
         action = torch.stack(action)
@@ -105,16 +129,29 @@ class PPO_Agent(nn.Module):
         return action_log_prob, state_value, entropy
 
     def format_frame(self,frame):
+        """
+        Input: raw RGB image (formatted as a nparray)
+        Output: formatted frame as a tensor, shape  = (1,c,h,w)
+        """
         frame = torch.FloatTensor(frame.copy())
         _, h, w, c = frame.shape
         frame = frame.unsqueeze(0).view(1, c, h, w)
         return frame
 
     def format_mes(self,mes):
+        """
+        Input: list of measurements
+        Output: measurements (as tensor)
+        """
         mes = torch.FloatTensor(mes)
         return mes
 
     def format_state (self,s):
+        """
+        Input: raw state (nparray image and list of measurements)
+        Output: frame and measurements (as tensors)
+        """
+
         return self.format_frame(s[0]), self.format_mes(s[1:])
 
     def discount_rewards(self,r, gamma, terminals):
@@ -132,6 +169,10 @@ class PPO_Agent(nn.Module):
         return discounted_r.tolist()
 
     def compute_advantages(self, memory):
+        """
+        Input: memory object
+        Output: normalized advantage (as list)
+        """
         current_action_log_probs, state_values, entropies = self.get_training_params(memory.se_eps_frames, memory.se_eps_mes, memory.se_actions)
         returns = self.discount_rewards(memory.se_rewards, self.gamma, memory.se_terminals)
         returns = torch.tensor(returns).to(self.device)
@@ -140,6 +181,11 @@ class PPO_Agent(nn.Module):
         return advantage
 
     def train(self,memory,prev_policy,iters):
+        """
+        Input: memory object, previous policy, current iteration
+        Output: updated previous policy (ie: current policy)
+        """
+
         for n in range (10):
             eps_frames, eps_mes,actions,actions_log_probs,rewards,terminals,advantage= memory.reservoir_sample(256)
 
