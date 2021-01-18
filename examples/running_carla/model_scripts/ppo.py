@@ -147,13 +147,14 @@ class PPO_Agent(nn.Module):
             returns = self.discount_rewards(rewards, self.gamma,terminals)
             returns = torch.tensor(returns).to(self.device)
             actions_log_probs = torch.FloatTensor(actions_log_probs).to(self.device)
+            advantage = torch.FloatTensor(advantage).to(self.device)
 
             #train PPO
             for i in range(self.n_epochs):
                 current_action_log_probs, state_values, entropies = self.get_training_params(eps_frames, eps_mes, actions)
                 policy_ratio = torch.exp(current_action_log_probs - actions_log_probs.detach())
 
-                adv_l_update1 = policy_ratio*advantage.float()
+                adv_l_update1 = policy_ratio*advantage
                 adv_l_update2 = (torch.clamp(policy_ratio, 1-self.clip_val, 1+self.clip_val) * advantage).float()
                 adv_l = torch.min(adv_l_update1, adv_l_update2)
                 loss_v = self.mse(state_values.float(), returns.float())
