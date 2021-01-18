@@ -15,13 +15,14 @@ import sys
 
 from traffic_events import TrafficEventType
 from statistics_manager import StatisticManager
-#IK this is bad, fix file path stuff later :(
-sys.path.append("/scratch/cluster/stephane/Carla_0.9.10/PythonAPI/carla/agents/navigation")
-from global_route_planner import GlobalRoutePlanner
-from global_route_planner_dao import GlobalRoutePlannerDAO
-#from scripts.launch_carla import launch_carla_server
-#from scripts.kill_carla import kill_carla
+from agents.navigation.global_route_planner import GlobalRoutePlanner
+from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
+
+from scripts.launch_carla import launch_carla_server
+from scripts.kill_carla import kill_carla
+
 from score_tests import RouteCompletionTest
+
 
 class CarlaEnv(object):
     def __init__(self, args, town='Town01', save_video=False):
@@ -108,7 +109,7 @@ class CarlaEnv(object):
                 self._list_traffic_lights.append((_actor, center, waypoints))
             if 'traffic.stop' in _actor.type_id:
                 self._list_stop_signs.append(_actor)
-        if(randomize):
+        if randomize:
             self._settings.set(SendNonPlayerAgentsInfo=True, NumberOfVehicles=random.randrange(30),
                               NumberOfPedestrians=random.randrange(30), WeatherId=random.randrange(14))
             self._settings.randomize_seeds()
