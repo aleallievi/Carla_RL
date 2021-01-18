@@ -14,8 +14,7 @@ from carla_env import CarlaEnv
 sys.path.append("model_scripts/")
 from ppo import PPO_Agent
 
-global
-device
+global device
 
 class Memory():
     def __init__(self):
