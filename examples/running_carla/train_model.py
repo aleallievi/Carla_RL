@@ -197,8 +197,8 @@ def train_model(args):
                 batch_ep_returns.clear()
 
                 wandb.log({
-                    "episode_return (suggested reward w/ ri)": avg_batch_ep_returns,
-                    "average_return (suggested reward w/ ri)": moving_avg,
+                    "avg batch return": avg_batch_ep_returns,
+                    "exponential avg return": moving_avg,
                     "percent_completed": info[0],
                     "number_of_collisions": info[1],
                     "number_of_trafficlight_violations": info[2],

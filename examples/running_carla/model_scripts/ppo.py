@@ -171,6 +171,6 @@ class PPO_Agent(nn.Module):
             print("    on epoch " + str(n))
 
         if iters % 50 == 0:
-            torch.save(self.state_dict(), "../model_files/vanilla_policy_state_dictionary.pt")
+            torch.save(self.state_dict(), "vanilla_policy_state_dictionary.pt")
         prev_policy.load_state_dict(self.state_dict())
         return prev_policy
