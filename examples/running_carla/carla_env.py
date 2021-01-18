@@ -134,8 +134,8 @@ class CarlaEnv(object):
         print('car agent spawned')
         self._setup_sensors()
         print('sensors created')
-        for i in range(10):
-            self._world.tick()
+        #for i in range(10):
+        #    self._world.tick()
 
         # create random target to reach
         np.random.seed(6)
@@ -233,10 +233,14 @@ class CarlaEnv(object):
         #sensor_queue = sensor_queue.queue
         while True:
             data = sensor_queue.get(block=True, timeout=timeout)
+            #print (data.frame)
+            #print (self.frame)
+            #print ("---")
             if data.frame == self.frame:
                 sensor_queue.task_done()
                 # print(self.frame)
                 return data
+        print ("\n")
 
     def step(self, timeout, action=None):
         self.started_sim = True
@@ -271,9 +275,8 @@ class CarlaEnv(object):
         # print ("QUEUE")
         # print (self._queues[0].queue)
 
-        # state = [self._retrieve_data(q, timeout) for q in self._queues]
-        # assert all(x.frame == self.frame for x in state)
-        state = [self.frame]
+        state = [self._retrieve_data(q, timeout) for q in self._queues]
+        assert all(x.frame == self.frame for x in state)
         state = [self.process_img(img, 80, 80) for img in state]
         state = [state, velocity_mag, d2target, rotation.pitch, rotation.yaw, rotation.roll]
         state.extend(command_encoded)
