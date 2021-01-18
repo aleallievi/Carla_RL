@@ -246,11 +246,11 @@ class CarlaEnv(object):
         state.extend(command_encoded)
 
         # check for traffic light infraction/stoplight infraction
-        InfractionsTests.check_traffic_light_infraction()
-        InfractionsTests.check_stop_sign_infraction()
+        self.infractions_test.check_traffic_light_infraction()
+        self.infractions_test.check_stop_sign_infraction()
 
         # check if the vehicle is either on a sidewalk or at a wrong lane.
-        InfractionsTests.check_outside_route_lane()
+        self.infractions_test.check_outside_route_lane()
 
         # get done information
         if self._tick > self.MAX_EP_LENGTH or self.infractions_test.colllided_w_static:
