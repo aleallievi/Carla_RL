@@ -22,7 +22,7 @@ import carla
 
 # from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 # from srunner.scenariomanager.timer import GameTime
-from traffic_events import TrafficEvent, TrafficEventType
+from .traffic_events import TrafficEvent, TrafficEventType
 
 
 class Criterion(object):

@@ -1,0 +1,31 @@
+{
+    "os": "Linux-4.15.0-129-generic-x86_64-with-Ubuntu-18.04-bionic",
+    "python": "3.6.9",
+    "heartbeatAt": "2021-01-19T21:10:00.517768",
+    "startedAt": "2021-01-19T21:09:58.165483",
+    "docker": null,
+    "gpu": "TITAN V",
+    "gpu_count": 8,
+    "cpu_count": 40,
+    "cuda": null,
+    "args": [
+        "--client-timeout",
+        "999",
+        "--world-port",
+        "8722",
+        "--tm-port",
+        "8094"
+    ],
+    "state": "running",
+    "codePath": "examples/running_carla/training_scripts/train_ppo_model.py",
+    "program": "training_scripts/train_ppo_model.py",
+    "git": {
+        "remote": "https://github.com/aleallievi/Carla_RL.git",
+        "commit": "e69c1af50871bc25d3d9cae27ebeefb820ab097e"
+    },
+    "email": null,
+    "root": "/scratch/cluster/stephane/Carla_RL",
+    "host": "titan-7",
+    "username": "stephane",
+    "executable": "/lusr/bin/python3"
+}

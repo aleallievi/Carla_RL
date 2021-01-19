@@ -16,9 +16,9 @@ import sys
 from .traffic_events import TrafficEventType
 from .statistics_manager import StatisticManager
 # #IK this is bad, fix file path stuff later :(
-# sys.path.append("/scratch/cluster/stephane/Carla_0.9.10/PythonAPI/carla/agents/navigation")
-from agents.navigation.global_route_planner import GlobalRoutePlanner
-from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
+sys.path.append("/scratch/cluster/stephane/Carla_0.9.10/PythonAPI/carla/agents/navigation")
+from global_route_planner import GlobalRoutePlanner
+from global_route_planner_dao import GlobalRoutePlannerDAO
 #from scripts.launch_carla import launch_carla_server
 #from scripts.kill_carla import kill_carla
 from .score_tests import RouteCompletionTest, InfractionsTests
@@ -126,8 +126,9 @@ class CarlaEnv(object):
             make_queue(sensor.listen)
 
         #TODO: Ciuld this be causing problems?
-        for i in range(10):
+        for i in range(9):
             self._world.tick()
+        self.frame = self._world.tick()
 
         self.target_waypoint_idx = 0
         self.at_waypoint = []
@@ -350,7 +351,7 @@ class CarlaEnv(object):
             cv2.putText(rgb_mat, "Route % complete: " + str(self.statistics_manager.route_record['route_percentage']), (2,10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
             cv2.putText(rgb_mat, "Step reward: " + str(self.reward), (2,30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
             cv2.putText(rgb_mat, "Total reward: " + str(self.total_reward), (2, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-            cv2.putText(rgb_mat, "WP index: " + str(self.statistics_manager._current_index), (2, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+            cv2.putText(rgb_mat, "WP index: " + str(self.completion_test._current_index), (2, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
             cv2.putText(rgb_mat, "Frame Rate: " + str(self.FRAME_RATE), (2, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
             cv2.putText(rgb_mat, "Discount: " + "0.99", (2,110), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
 
