@@ -133,7 +133,7 @@ class CarlaEnv(object):
         self.dist_to_target_wp_tr = None
 
         self.completion_test = RouteCompletionTest(self._car_agent, self.route_waypoints_unformatted, self._map)
-        self.infractions_test = InfractionsTests(self._car_agent,self._map,self._world,self.route_waypoints_unformatted)
+        self.infractions_test = InfractionsTests(self._car_agent,self._map,self._world,self.route_waypoints_unformatted, self.route_waypoints)
 
     def reset(self, randomize, i):
         # self._cleanup()
