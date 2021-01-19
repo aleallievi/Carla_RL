@@ -16,6 +16,7 @@ The atomic criteria are implemented with py_trees.
 import math
 import numpy as np
 import shapely
+from shapely.geometry import LineString
 
 import carla
 
@@ -140,10 +141,13 @@ class RouteCompletionTest(Criterion):
         return self.actual_value, self._current_index, self.is_route_completed
 
 class InfractionsTests():
-    def __init__ (self,_car_agent,_map,_world):
+    def __init__ (self,_car_agent,_map,_world,route_waypoints_unformatted,route_waypoints,_pre_ego_waypoint):
         self._car_agent = _car_agent
         self._map = _map
         self._world = _world
+        self.route_waypoints_unformatted = route_waypoints_unformatted
+        self.route_waypoints = route_waypoints
+        self._pre_ego_waypoint = _pre_ego_waypoint
 
         self._list_traffic_lights = []
         self._list_stop_signs = []
@@ -169,6 +173,15 @@ class InfractionsTests():
         self.n_stopsign_violations = 0
         self.n_route_violations = 0
         self.n_vehicle_blocked = 0
+
+        self.DISTANCE_LIGHT = 15
+        self.PROXIMITY_THRESHOLD = 50.0  # meters
+        self.SPEED_THRESHOLD = 0.1
+        self.WAYPOINT_STEP = 1.0  # meters
+        self.ALLOWED_OUT_DISTANCE = 1.3          # At least 0.5, due to the mini-shoulder between lanes and sidewalks
+        self.MAX_ALLOWED_VEHICLE_ANGLE = 120.0   # Maximum angle between the yaw and waypoint lane
+        self.MAX_ALLOWED_WAYPOINT_ANGLE = 150.0  # Maximum change between the yaw-lane angle between frames
+        self.WINDOWS_SIZE = 3   # Amount of additional waypoints checked (in case the first on fails)
 
         # TODO: decide whether to use actor lists or dict
         # Get all static actors in world

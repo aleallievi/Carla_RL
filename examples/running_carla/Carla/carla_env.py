@@ -50,15 +50,6 @@ class CarlaEnv(object):
              "RoadOption.CHANGELANERIGHT":  [1, 0, 0, 0, 0, 0]
              }
 
-        self.DISTANCE_LIGHT = 15
-        self.PROXIMITY_THRESHOLD = 50.0  # meters
-        self.SPEED_THRESHOLD = 0.1
-        self.WAYPOINT_STEP = 1.0  # meters
-        self.ALLOWED_OUT_DISTANCE = 1.3          # At least 0.5, due to the mini-shoulder between lanes and sidewalks
-        self.MAX_ALLOWED_VEHICLE_ANGLE = 120.0   # Maximum angle between the yaw and waypoint lane
-        self.MAX_ALLOWED_WAYPOINT_ANGLE = 150.0  # Maximum change between the yaw-lane angle between frames
-        self.WINDOWS_SIZE = 3   # Amount of additional waypoints checked (in case the first on fails)
-
         self.init()
 
     def __enter__(self):
@@ -76,6 +67,7 @@ class CarlaEnv(object):
     def init(self, randomize=False, i=0):
         self._settings = self._world.get_settings()
         self.reward = None
+        self.total_reward = 0
 
         # vehicle, sensor
         self._actor_dict = collections.defaultdict(list)
@@ -107,8 +99,6 @@ class CarlaEnv(object):
 
         self._spawn_car_agent()
         print('car agent spawned')
-        self._setup_sensors()
-        print('sensors created')
 
         # create random target to reach
         np.random.seed(6)
@@ -121,6 +111,9 @@ class CarlaEnv(object):
         # get all initial waypoints
         self._pre_ego_waypoint = self._map.get_waypoint(self._car_agent.get_location())
         self._time_start = time.time()
+
+        self._setup_sensors()
+        print('sensors created')
 
         # create sensor queues
         self._queues = []
@@ -139,10 +132,9 @@ class CarlaEnv(object):
         self.target_waypoint_idx = 0
         self.at_waypoint = []
         self.followed_target_waypoints = []
-        self.dist_to_target_wp_tr = None
 
         self.completion_test = RouteCompletionTest(self._car_agent, self.route_waypoints_unformatted, self._map)
-        self.infractions_test = InfractionsTests(self._car_agent,self._map,self._world)
+        self.infractions_test = InfractionsTests(self._car_agent,self._map,self._world,self.route_waypoints_unformatted, self.route_waypoints, self._pre_ego_waypoint)
 
     def reset(self, randomize, i):
         # self._cleanup()
@@ -194,7 +186,7 @@ class CarlaEnv(object):
             self.draw_waypoints(self._world,self.route_waypoints_unformatted)
             #self.cap = cv2.VideoCapture(0)
             fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
-            self.out = cv2.VideoWriter("episode_footage/output_"+str(iter)+".avi", fourcc,FPS, (height+120,width))
+            self.out = cv2.VideoWriter("episode_footage/output_"+str(iter)+".avi", fourcc,60, (height+120,width))
             self.n_img = 0
 
     def _retrieve_data(self, sensor_queue, timeout):
@@ -213,7 +205,6 @@ class CarlaEnv(object):
         self._spectator.set_transform(carla.Transform
                                       (self._car_agent.get_transform().location + carla.Location(z=2), spectator_rot)
                                       )
-
         if action is not None:
             self._car_agent.apply_control(carla.VehicleControl(throttle=action[0][0], steer=action[0][1]))
         else:
@@ -246,19 +237,21 @@ class CarlaEnv(object):
         state.extend(command_encoded)
 
         # check for traffic light infraction/stoplight infraction
-        InfractionsTests.check_traffic_light_infraction()
-        InfractionsTests.check_stop_sign_infraction()
+        self.infractions_test.check_traffic_light_infraction()
+        self.infractions_test.check_stop_sign_infraction()
 
         # check if the vehicle is either on a sidewalk or at a wrong lane.
-        InfractionsTests.check_outside_route_lane()
+        self.infractions_test.check_outside_route_lane()
 
         # get done information
         if self._tick > self.MAX_EP_LENGTH or self.infractions_test.colllided_w_static:
             done = True
             self.infractions_test.events.append([TrafficEventType.ROUTE_COMPLETION, dist_completed])
+            self._world.tick()
         elif is_route_completed:
             done = True
             self.infractions_test.events.append([TrafficEventType.ROUTE_COMPLETED])
+            self._world.tick()
         else:
             done = False
             self.infractions_test.events.append([TrafficEventType.ROUTE_COMPLETION, dist_completed])
@@ -270,6 +263,7 @@ class CarlaEnv(object):
         #------------------------------------------------------------------------------------------------------------------
         reward = self.statistics_manager.route_record["score_composed"] - self.statistics_manager.prev_score
         self.reward = reward
+        self.total_reward += reward
         # DEBUG
         # if reward != 0:
         #     print(f'score_route:{self.statistics_manager.route_record["score_route"]}')
