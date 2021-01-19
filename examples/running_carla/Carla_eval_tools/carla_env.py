@@ -25,7 +25,7 @@ from .score_tests import RouteCompletionTest, InfractionsTests
 
 
 class CarlaEnv(object):
-    def __init__(self, args, town='Town01', save_video=False, i):
+    def __init__(self, args, town='Town01', save_video=False, i = 0):
         # Tunable parameters
         self.FRAME_RATE = 5.0  # in Hz
         self.MAX_EP_LENGTH = 60  # in seconds
@@ -64,7 +64,7 @@ class CarlaEnv(object):
         self._cleanup()
         self.set_sync_mode(False)
 
-    def init(self, randomize=False, i):
+    def init(self, i, randomize=False):
         self._settings = self._world.get_settings()
         self.reward = None
         self.total_reward = 0
@@ -158,7 +158,7 @@ class CarlaEnv(object):
             end = begin + carla.Location(x=math.cos(angle), y=math.sin(angle))
             world.debug.draw_arrow(begin, end, arrow_size=0.3, life_time=1.0)
 
-    def _setup_sensors(self, height=480, width=640, fov=10,i):
+    def _setup_sensors(self, i, height=480, width=640, fov=10):
         sensor_relative_transform = carla.Transform(carla.Location(x=2.5, z=0.7))
 
         # get camera sensor
