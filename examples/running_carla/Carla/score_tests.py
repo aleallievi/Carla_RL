@@ -16,6 +16,7 @@ The atomic criteria are implemented with py_trees.
 import math
 import numpy as np
 import shapely
+from shapely.geometry import LineString
 
 import carla
 

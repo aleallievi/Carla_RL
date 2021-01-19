@@ -67,6 +67,7 @@ class CarlaEnv(object):
     def init(self, randomize=False, i=0):
         self._settings = self._world.get_settings()
         self.reward = None
+        self.total_reward = 0
 
         # vehicle, sensor
         self._actor_dict = collections.defaultdict(list)
@@ -98,8 +99,6 @@ class CarlaEnv(object):
 
         self._spawn_car_agent()
         print('car agent spawned')
-        self._setup_sensors()
-        print('sensors created')
 
         # create random target to reach
         np.random.seed(6)
@@ -112,6 +111,9 @@ class CarlaEnv(object):
         # get all initial waypoints
         self._pre_ego_waypoint = self._map.get_waypoint(self._car_agent.get_location())
         self._time_start = time.time()
+
+        self._setup_sensors()
+        print('sensors created')
 
         # create sensor queues
         self._queues = []
@@ -203,7 +205,6 @@ class CarlaEnv(object):
         self._spectator.set_transform(carla.Transform
                                       (self._car_agent.get_transform().location + carla.Location(z=2), spectator_rot)
                                       )
-
         if action is not None:
             self._car_agent.apply_control(carla.VehicleControl(throttle=action[0][0], steer=action[0][1]))
         else:
@@ -262,6 +263,7 @@ class CarlaEnv(object):
         #------------------------------------------------------------------------------------------------------------------
         reward = self.statistics_manager.route_record["score_composed"] - self.statistics_manager.prev_score
         self.reward = reward
+        self.total_reward += reward
         # DEBUG
         # if reward != 0:
         #     print(f'score_route:{self.statistics_manager.route_record["score_route"]}')
