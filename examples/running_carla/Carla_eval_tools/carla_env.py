@@ -13,15 +13,15 @@ from shapely.geometry import LineString
 from PIL import Image, ImageDraw
 import sys
 
-from traffic_events import TrafficEventType
-from statistics_manager import StatisticManager
-#IK this is bad, fix file path stuff later :(
-sys.path.append("/scratch/cluster/stephane/Carla_0.9.10/PythonAPI/carla/agents/navigation")
-from global_route_planner import GlobalRoutePlanner
-from global_route_planner_dao import GlobalRoutePlannerDAO
+from .traffic_events import TrafficEventType
+from .statistics_manager import StatisticManager
+# #IK this is bad, fix file path stuff later :(
+# sys.path.append("/scratch/cluster/stephane/Carla_0.9.10/PythonAPI/carla/agents/navigation")
+from agents.navigation.global_route_planner import GlobalRoutePlanner
+from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
 #from scripts.launch_carla import launch_carla_server
 #from scripts.kill_carla import kill_carla
-from score_tests import RouteCompletionTest, InfractionsTests
+from .score_tests import RouteCompletionTest, InfractionsTests
 
 
 class CarlaEnv(object):
@@ -149,7 +149,7 @@ class CarlaEnv(object):
             self._car_agent = self._world.try_spawn_actor(self._car_agent_model, self._start_pose)
         self._actor_dict['car_agent'].append(self._car_agent)
 
-    def draw_waypoints(self,world, waypoints):
+    def draw_waypoints(self, world, waypoints):
         for w in waypoints:
             t = w.transform
             begin = t.location + carla.Location(z=0.5)
@@ -182,8 +182,8 @@ class CarlaEnv(object):
 
         self.out = None
         if self.save_video:
-            print ("saving video turned on")
-            self.draw_waypoints(self._world,self.route_waypoints_unformatted)
+            print("saving video turned on")
+            self.draw_waypoints(self._world, self.route_waypoints_unformatted)
             #self.cap = cv2.VideoCapture(0)
             fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
             self.out = cv2.VideoWriter("episode_footage/output_"+str(iter)+".avi", fourcc,60, (height+120,width))
@@ -247,11 +247,9 @@ class CarlaEnv(object):
         if self._tick > self.MAX_EP_LENGTH or self.infractions_test.colllided_w_static:
             done = True
             self.infractions_test.events.append([TrafficEventType.ROUTE_COMPLETION, dist_completed])
-            self._world.tick()
         elif is_route_completed:
             done = True
             self.infractions_test.events.append([TrafficEventType.ROUTE_COMPLETED])
-            self._world.tick()
         else:
             done = False
             self.infractions_test.events.append([TrafficEventType.ROUTE_COMPLETION, dist_completed])
@@ -348,12 +346,12 @@ class CarlaEnv(object):
             rgb = rgb[:, :, :3]
             #percent complete
             rgb_mat = cv2.UMat(rgb)
-            rgb_mat = cv2.copyMakeBorder(rgb_mat, 120,0,0,0, cv2.BORDER_CONSTANT, None, 0)
+            rgb_mat = cv2.copyMakeBorder(rgb_mat, 120, 0, 0, 0, cv2.BORDER_CONSTANT, None, 0)
             cv2.putText(rgb_mat, "Route % complete: " + str(self.statistics_manager.route_record['route_percentage']), (2,10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
             cv2.putText(rgb_mat, "Step reward: " + str(self.reward), (2,30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-            cv2.putText(rgb_mat, "Total reward: " + str(self.total_reward), (2,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-            cv2.putText(rgb_mat, "WP index: " + str(self.statistics_manager._current_index), (2,70), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-            cv2.putText(rgb_mat, "Frame Rate: " + str(self.FRAME_RATE), (2,90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+            cv2.putText(rgb_mat, "Total reward: " + str(self.total_reward), (2, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+            cv2.putText(rgb_mat, "WP index: " + str(self.statistics_manager._current_index), (2, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+            cv2.putText(rgb_mat, "Frame Rate: " + str(self.FRAME_RATE), (2, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
             cv2.putText(rgb_mat, "Discount: " + "0.99", (2,110), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
 
             # rgb = rgb.reshape(480+60,640,3)

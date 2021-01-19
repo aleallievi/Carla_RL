@@ -140,8 +140,10 @@ class RouteCompletionTest(Criterion):
 
         return self.actual_value, self._current_index, self.is_route_completed
 
-class InfractionsTests():
-    def __init__ (self,_car_agent,_map,_world,route_waypoints_unformatted,route_waypoints,_pre_ego_waypoint):
+
+class InfractionsTests(Criterion):
+    def __init__(self, _car_agent, _map, _world, route_waypoints_unformatted, route_waypoints, _pre_ego_waypoint, name="InfractionsTests"):
+        super(InfractionsTests, self).__init__(name, _car_agent, _map)
         self._car_agent = _car_agent
         self._map = _map
         self._world = _world

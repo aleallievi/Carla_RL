@@ -8,16 +8,16 @@ import sys
 import torch
 import wandb
 import copy
-import carla
 
-sys.path.append("/scratch/cluster/stephane/Carla_RL/examples/running_carla/Carla/")
-from carla_env import CarlaEnv
-sys.path.append("/scratch/cluster/stephane/Carla_RL/examples/running_carla/model_scripts/")
-from ppo import PPO_Agent
+# sys.path.append("../Carla/")
+from Carla_eval_tools.carla_env import CarlaEnv
+# sys.path.append("../model_scripts/")
+from model_scripts.ppo import PPO_Agent
 
 global device
 
-class Memory():
+
+class Memory:
     def __init__(self):
         #data for entire rollout
         self.rewards = []
@@ -42,7 +42,7 @@ class Memory():
         self.se_states_p = []
         self.se_terminals = []
 
-    def add(self,frame,mes,raw_frame,raw_mes,a,a_log_prob,reward,s_prime,done):
+    def add(self, frame, mes, raw_frame, raw_mes, a, a_log_prob, reward, s_prime, done):
         self.eps_frames.append(frame.detach().clone())
         self.eps_frames_raw.append(copy.deepcopy(raw_frame))
         self.eps_mes.append(mes.detach().clone())
@@ -53,7 +53,7 @@ class Memory():
         self.states_p.append(copy.deepcopy(s_prime))
         self.terminals.append(copy.deepcopy(done))
 
-    def se_add(self,frame,mes,raw_frame,raw_mes,a,a_log_prob,reward,s_prime,done):
+    def se_add(self, frame, mes, raw_frame, raw_mes, a, a_log_prob, reward, s_prime, done):
         self.se_eps_frames.append(frame.detach().clone())
         self.se_eps_frames_raw.append(copy.deepcopy(raw_frame))
         self.se_eps_mes.append(mes.detach().clone())
@@ -64,10 +64,10 @@ class Memory():
         self.se_states_p.append(copy.deepcopy(s_prime))
         self.se_terminals.append(copy.deepcopy(done))
 
-    def add_advantages(self,advantages):
+    def add_advantages(self, advantages):
         self.advantages.extend(advantages)
 
-    def clear (self):
+    def clear(self):
         #self.rewards = list(self.rewards.numpy())
         #self.actions_log_probs = list(self.actions_log_probs.numpy())
 
@@ -96,8 +96,7 @@ class Memory():
         self.se_states_p.clear()
         self.se_terminals.clear()
 
-
-    def reservoir_sample(self,k):
+    def reservoir_sample(self, k):
         eps_frames_reservoir = []
         eps_mes_reservoir = []
         actions_reservoir = []
@@ -106,7 +105,7 @@ class Memory():
         terminals_reservoir = []
         advantages_reservoir = []
 
-        for i in range (len(self.eps_frames)):
+        for i in range(len(self.eps_frames)):
             if len(eps_frames_reservoir) < k:
                 eps_frames_reservoir.append(self.eps_frames[i])
                 eps_mes_reservoir.append(self.eps_mes[i])
@@ -116,7 +115,7 @@ class Memory():
                 terminals_reservoir.append(self.terminals[i])
                 advantages_reservoir.append(self.advantages[i])
             else:
-                j = int(random.uniform(0,i))
+                j = int(random.uniform(0, i))
                 if j < k:
                     eps_frames_reservoir[j] = self.eps_frames[i]
                     eps_mes_reservoir[j] = self.eps_mes[i]
@@ -125,7 +124,8 @@ class Memory():
                     rewards_reservoir[j] = self.rewards[i]
                     terminals_reservoir[j] = self.terminals[i]
                     advantages_reservoir[j] = self.advantages[i]
-        return eps_frames_reservoir,eps_mes_reservoir,actions_reservoir,actions_log_probs_reservoir,rewards_reservoir,terminals_reservoir,advantages_reservoir
+        return eps_frames_reservoir, eps_mes_reservoir, actions_reservoir, actions_log_probs_reservoir, rewards_reservoir, terminals_reservoir, advantages_reservoir
+
 
 def train_model(args):
     n_iters = 10000
@@ -142,8 +142,8 @@ def train_model(args):
     action_std = 0.5
 
     #init models
-    policy = PPO_Agent(n_states, n_actions, action_std,lr, gamma, n_epochs,clip_val,device).to(device)
-    prev_policy = PPO_Agent(n_states, n_actions, action_std,lr, gamma, n_epochs,clip_val,device).to(device)
+    policy = PPO_Agent(n_states, n_actions, action_std, lr, gamma, n_epochs, clip_val, device).to(device)
+    prev_policy = PPO_Agent(n_states, n_actions, action_std, lr, gamma, n_epochs, clip_val, device).to(device)
     prev_policy.load_state_dict(policy.state_dict())
     memory = Memory()
 
@@ -169,12 +169,12 @@ def train_model(args):
             done = False
 
             while not done:
-                frame,mes = prev_policy.format_state(s)
-                a, a_log_prob = prev_policy.choose_action(frame,mes)
+                frame, mes = prev_policy.format_state(s)
+                a, a_log_prob = prev_policy.choose_action(frame, mes)
                 s_prime, reward, done, info = env.step(action=a.detach().tolist(), timeout=2)
 
-                memory.add(frame, mes,s[0],s[1:],a,a_log_prob,reward,s_prime,done)
-                memory.se_add(frame, mes,s[0],s[1:],a,a_log_prob,reward,s_prime,done)
+                memory.add(frame, mes, s[0], s[1:], a, a_log_prob, reward, s_prime, done)
+                memory.se_add(frame, mes, s[0], s[1:], a, a_log_prob, reward, s_prime, done)
 
                 s = copy.deepcopy(s_prime)
                 t += 1
@@ -222,10 +222,12 @@ def train_model(args):
                 })
                 memory.clear()
 
+
 def launch_client(args):
     client = carla.Client(args.host, args.world_port)
     client.set_timeout(args.client_timeout)
     return client
+
 
 def main(args):
     global device

@@ -2,7 +2,8 @@ import carla
 import numpy as np
 import math
 
-from traffic_events import TrafficEventType
+from .traffic_events import TrafficEventType
+
 
 class StatisticManager:
 
