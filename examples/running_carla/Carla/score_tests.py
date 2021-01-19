@@ -140,12 +140,13 @@ class RouteCompletionTest(Criterion):
         return self.actual_value, self._current_index, self.is_route_completed
 
 class InfractionsTests():
-    def __init__ (self,_car_agent,_map,_world,route_waypoints_unformatted,route_waypoints):
+    def __init__ (self,_car_agent,_map,_world,route_waypoints_unformatted,route_waypoints,_pre_ego_waypoint):
         self._car_agent = _car_agent
         self._map = _map
         self._world = _world
         self.route_waypoints_unformatted = route_waypoints_unformatted
         self.route_waypoints = route_waypoints
+        self._pre_ego_waypoint = _pre_ego_waypoint
 
         self._list_traffic_lights = []
         self._list_stop_signs = []
