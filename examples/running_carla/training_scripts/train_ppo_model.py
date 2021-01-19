@@ -162,7 +162,7 @@ def train_model(args):
     save_video = False
 
     for iters in range(n_iters):
-        with CarlaEnv(args,save_video=save_video) as env:
+        with CarlaEnv(args,save_video=save_video,i=iters) as env:
             s, _, _, _ = env.reset(False, iters)
             t = 0
             episode_return = 0

@@ -25,7 +25,7 @@ from .score_tests import RouteCompletionTest, InfractionsTests
 
 
 class CarlaEnv(object):
-    def __init__(self, args, town='Town01', save_video=False):
+    def __init__(self, args, town='Town01', save_video=False, i):
         # Tunable parameters
         self.FRAME_RATE = 5.0  # in Hz
         self.MAX_EP_LENGTH = 60  # in seconds
@@ -50,7 +50,7 @@ class CarlaEnv(object):
              "RoadOption.CHANGELANERIGHT":  [1, 0, 0, 0, 0, 0]
              }
 
-        self.init()
+        self.init(i)
 
     def __enter__(self):
         self.frame = self.set_sync_mode(True)
@@ -64,7 +64,7 @@ class CarlaEnv(object):
         self._cleanup()
         self.set_sync_mode(False)
 
-    def init(self, randomize=False, i=0):
+    def init(self, randomize=False, i):
         self._settings = self._world.get_settings()
         self.reward = None
         self.total_reward = 0
@@ -112,7 +112,7 @@ class CarlaEnv(object):
         self._pre_ego_waypoint = self._map.get_waypoint(self._car_agent.get_location())
         self._time_start = time.time()
 
-        self._setup_sensors()
+        self._setup_sensors(i)
         print('sensors created')
 
         # create sensor queues
@@ -158,7 +158,7 @@ class CarlaEnv(object):
             end = begin + carla.Location(x=math.cos(angle), y=math.sin(angle))
             world.debug.draw_arrow(begin, end, arrow_size=0.3, life_time=1.0)
 
-    def _setup_sensors(self, height=480, width=640, fov=10):
+    def _setup_sensors(self, height=480, width=640, fov=10,i):
         sensor_relative_transform = carla.Transform(carla.Location(x=2.5, z=0.7))
 
         # get camera sensor
@@ -187,7 +187,7 @@ class CarlaEnv(object):
             self.draw_waypoints(self._world, self.route_waypoints_unformatted)
             #self.cap = cv2.VideoCapture(0)
             fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
-            self.out = cv2.VideoWriter("episode_footage/output_"+str(iter)+".avi", fourcc,60, (height+120,width))
+            self.out = cv2.VideoWriter("episode_footage/output_"+str(i)+".avi", fourcc,60, (height+120,width))
             self.n_img = 0
 
     def _retrieve_data(self, sensor_queue, timeout):
