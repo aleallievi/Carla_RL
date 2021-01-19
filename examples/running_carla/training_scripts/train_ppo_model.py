@@ -192,7 +192,8 @@ def train_model(args):
             timestep_mod = total_timesteps // update_timestep
 
             if timestep_mod > prev_timestep_mod:
-                prev_policy = policy.train(memory, prev_policy,iters)
+                prev_policy, mean_entropy = policy.train(memory, prev_policy,iters)
+                memory.clear()
 
                 avg_batch_ep_returns = sum(batch_ep_returns)/len(batch_ep_returns)
                 moving_avg = (avg_batch_ep_returns - moving_avg) * (2 / (train_iters + 2)) + avg_batch_ep_returns
@@ -207,6 +208,7 @@ def train_model(args):
                 prev_batch_return = avg_batch_ep_returns
 
                 wandb.log({
+                    "mean entropy": mean_entropy,
                     "avg batch return": avg_batch_ep_returns,
                     "exponential avg return": moving_avg,
                     "percent_completed": info[0],

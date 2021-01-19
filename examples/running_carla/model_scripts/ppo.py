@@ -13,7 +13,7 @@ import torch
 import torch.nn as nn
 from torch.optim import Adam
 from torch.distributions import MultivariateNormal
-
+from torch.distributions import kl
 
 class PPO_Agent(nn.Module):
     def __init__(self, linear_state_dim, action_dim, action_std,lr, gamma, n_epochs,clip_val,device):
@@ -186,7 +186,7 @@ class PPO_Agent(nn.Module):
         Input: memory object, previous policy, current iteration
         Output: updated previous policy (ie: current policy)
         """
-
+        mean_entropies = []
         for n in range (10):
             eps_frames, eps_mes,actions,actions_log_probs,rewards,terminals,advantage= memory.reservoir_sample(256)
 
@@ -214,9 +214,11 @@ class PPO_Agent(nn.Module):
                 loss.mean().backward()
                 self.optimizer.step()
 
+                mean_entropies.append(entropies.detach().numpy().mean())
+
             print("    on epoch " + str(n))
 
         if iters % 50 == 0:
             torch.save(self.state_dict(), "vanilla_policy_state_dictionary.pt")
         prev_policy.load_state_dict(self.state_dict())
-        return prev_policy
+        return prev_policy, np.array(mean_entropies).mean()
