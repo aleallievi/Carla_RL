@@ -50,15 +50,6 @@ class CarlaEnv(object):
              "RoadOption.CHANGELANERIGHT":  [1, 0, 0, 0, 0, 0]
              }
 
-        self.DISTANCE_LIGHT = 15
-        self.PROXIMITY_THRESHOLD = 50.0  # meters
-        self.SPEED_THRESHOLD = 0.1
-        self.WAYPOINT_STEP = 1.0  # meters
-        self.ALLOWED_OUT_DISTANCE = 1.3          # At least 0.5, due to the mini-shoulder between lanes and sidewalks
-        self.MAX_ALLOWED_VEHICLE_ANGLE = 120.0   # Maximum angle between the yaw and waypoint lane
-        self.MAX_ALLOWED_WAYPOINT_ANGLE = 150.0  # Maximum change between the yaw-lane angle between frames
-        self.WINDOWS_SIZE = 3   # Amount of additional waypoints checked (in case the first on fails)
-
         self.init()
 
     def __enter__(self):
