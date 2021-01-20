@@ -193,13 +193,11 @@ def train_model(args):
 
             if timestep_mod > prev_timestep_mod:
                 prev_policy, mean_entropy = policy.train(memory, prev_policy,iters)
-                memory.clear()
+                #memory.clear()
 
                 avg_batch_ep_returns = sum(batch_ep_returns)/len(batch_ep_returns)
                 moving_avg = (avg_batch_ep_returns - moving_avg) * (2 / (train_iters + 2)) + avg_batch_ep_returns
                 train_iters += 1
-                batch_ep_returns.clear()
-
                 if avg_batch_ep_returns - prev_batch_return > 0.3:
                     save_video = True
                 else:
