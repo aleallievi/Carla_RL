@@ -181,7 +181,7 @@ class PPO_Agent(nn.Module):
         advantage = (advantage - advantage.mean()) / advantage.std()
         return advantage
 
-    def train(self,memory,prev_policy,iters):
+    def train(self, memory, prev_policy, iters):
         """
         Input: memory object, previous policy, current iteration
         Output: updated previous policy (ie: current policy)

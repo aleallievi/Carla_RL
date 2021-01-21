@@ -157,12 +157,12 @@ def train_model(args):
     timestep_mod = 0
     train_iters = 0
     total_timesteps = 0
-    update_timestep = 2000
+    update_timestep = 200
     prev_batch_return = 0
     save_video = False
 
     for iters in range(n_iters):
-        with CarlaEnv(args,save_video=save_video,i=iters) as env:
+        with CarlaEnv(args, iters, save_video=save_video) as env:
             s, _, _, _ = env.reset(False, iters)
             t = 0
             episode_return = 0
@@ -181,6 +181,7 @@ def train_model(args):
                 total_timesteps +=1
                 episode_return += reward
 
+            print('episode return:', episode_return)
             #compute episode advtanages using the single episodes collected data
             memory.add_advantages(policy.compute_advantages(memory))
             #clear single episodes collected data
@@ -192,7 +193,7 @@ def train_model(args):
             timestep_mod = total_timesteps // update_timestep
 
             if timestep_mod > prev_timestep_mod:
-                prev_policy, mean_entropy = policy.train(memory, prev_policy,iters)
+                prev_policy, mean_entropy = policy.train(memory, prev_policy, iters)
                 #memory.clear()
 
                 avg_batch_ep_returns = sum(batch_ep_returns)/len(batch_ep_returns)

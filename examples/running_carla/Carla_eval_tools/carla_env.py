@@ -16,16 +16,16 @@ import sys
 from .traffic_events import TrafficEventType
 from .statistics_manager import StatisticManager
 # #IK this is bad, fix file path stuff later :(
-sys.path.append("/scratch/cluster/stephane/Carla_0.9.10/PythonAPI/carla/agents/navigation")
-from global_route_planner import GlobalRoutePlanner
-from global_route_planner_dao import GlobalRoutePlannerDAO
+# sys.path.append("/scratch/cluster/stephane/Carla_0.9.10/PythonAPI/carla/agents/navigation")
+from agents.navigation.global_route_planner import GlobalRoutePlanner
+from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
 #from scripts.launch_carla import launch_carla_server
 #from scripts.kill_carla import kill_carla
 from .score_tests import RouteCompletionTest, InfractionsTests
 
 
 class CarlaEnv(object):
-    def __init__(self, args, town='Town01', save_video=False, i = 0):
+    def __init__(self, args, iters, town='Town01', save_video=False):
         # Tunable parameters
         self.FRAME_RATE = 5.0  # in Hz
         self.MAX_EP_LENGTH = 60  # in seconds
@@ -39,6 +39,7 @@ class CarlaEnv(object):
         self._blueprints = self._world.get_blueprint_library()
         self._spectator = self._world.get_spectator()
         self._car_agent_model = self._blueprints.filter("model3")[0]
+        self.iters = iters
         self.save_video = save_video
 
         self.command2onehot =\
@@ -50,7 +51,7 @@ class CarlaEnv(object):
              "RoadOption.CHANGELANERIGHT":  [1, 0, 0, 0, 0, 0]
              }
 
-        self.init(i)
+        self.init()
 
     def __enter__(self):
         self.frame = self.set_sync_mode(True)
@@ -64,7 +65,7 @@ class CarlaEnv(object):
         self._cleanup()
         self.set_sync_mode(False)
 
-    def init(self, i, randomize=False):
+    def init(self, randomize=False, i=0):
         self._settings = self._world.get_settings()
         self.reward = None
         self.total_reward = 0
@@ -112,7 +113,7 @@ class CarlaEnv(object):
         self._pre_ego_waypoint = self._map.get_waypoint(self._car_agent.get_location())
         self._time_start = time.time()
 
-        self._setup_sensors(i)
+        self._setup_sensors()
         print('sensors created')
 
         # create sensor queues
@@ -158,7 +159,7 @@ class CarlaEnv(object):
             end = begin + carla.Location(x=math.cos(angle), y=math.sin(angle))
             world.debug.draw_arrow(begin, end, arrow_size=0.3, life_time=1.0)
 
-    def _setup_sensors(self, i, height=480, width=640, fov=10):
+    def _setup_sensors(self, height=480, width=640, fov=10):
         sensor_relative_transform = carla.Transform(carla.Location(x=2.5, z=0.7))
 
         # get camera sensor
@@ -186,8 +187,8 @@ class CarlaEnv(object):
             print("saving video turned on")
             self.draw_waypoints(self._world, self.route_waypoints_unformatted)
             #self.cap = cv2.VideoCapture(0)
-            fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
-            self.out = cv2.VideoWriter("episode_footage/output_"+str(i)+".avi", fourcc,60, (height+120,width))
+            fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
+            self.out = cv2.VideoWriter("episode_footage/output_"+str(self.iters)+".avi", fourcc, 60, (height+120, width))
             self.n_img = 0
 
     def _retrieve_data(self, sensor_queue, timeout):
