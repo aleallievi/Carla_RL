@@ -16,9 +16,9 @@ import sys
 from .traffic_events import TrafficEventType
 from .statistics_manager import StatisticManager
 # #IK this is bad, fix file path stuff later :(
-sys.path.append("/home/stephane/Desktop/CARLA_0.9.11/PythonAPI/carla/agents/navigation")
-from global_route_planner import GlobalRoutePlanner
-from global_route_planner_dao import GlobalRoutePlannerDAO
+# sys.path.append("/scratch/cluster/stephane/Carla_0.9.10/PythonAPI/carla/agents/navigation")
+from agents.navigation.global_route_planner import GlobalRoutePlanner
+from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
 #from scripts.launch_carla import launch_carla_server
 #from scripts.kill_carla import kill_carla
 from .score_tests import RouteCompletionTest, InfractionsTests
