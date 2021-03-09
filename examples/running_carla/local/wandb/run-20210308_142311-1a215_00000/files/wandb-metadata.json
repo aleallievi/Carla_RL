@@ -1,0 +1,33 @@
+{
+    "os": "Linux-5.4.0-66-generic-x86_64-with-glibc2.10",
+    "python": "3.8.5",
+    "heartbeatAt": "2021-03-08T20:23:13.325363",
+    "startedAt": "2021-03-08T20:23:11.428087",
+    "docker": null,
+    "gpu": "GeForce RTX 2080 Ti",
+    "gpu_count": 4,
+    "cpu_count": 24,
+    "cuda": null,
+    "args": [
+        "--client-timeout",
+        "999",
+        "--world-port",
+        "9000",
+        "--tm-port",
+        "9050",
+        "--client-gpu",
+        "3"
+    ],
+    "state": "running",
+    "codePath": "examples/running_carla/training_scripts/train_rllib_ppo.py",
+    "program": "/home/stephane/Desktop/Carla_RL/examples/running_carla//training_scripts/train_rllib_ppo.py",
+    "git": {
+        "remote": "https://github.com/Stephanehk/Carla_RL.git",
+        "commit": "df0fb75e317ef59df29b1b44b70e3480c2d41fb3"
+    },
+    "email": "stephane@utexas.edu",
+    "root": "/home/stephane/Desktop/Carla_RL",
+    "host": "lambda-quad",
+    "username": "stephane",
+    "executable": "/home/stephane/miniconda3/envs/carla-challenge/bin/python3"
+}

@@ -1,0 +1,32 @@
+{
+    "os": "Linux-5.4.0-62-generic-x86_64-with-glibc2.10",
+    "python": "3.8.5",
+    "heartbeatAt": "2021-01-21T23:24:41.053606",
+    "startedAt": "2021-01-21T23:24:40.347217",
+    "docker": null,
+    "gpu": "GeForce RTX 2080 Ti",
+    "gpu_count": 4,
+    "cpu_count": 24,
+    "cuda": null,
+    "args": [
+        "--client-timeout",
+        "999",
+        "--world-port",
+        "9000",
+        "--tm-port",
+        "9050",
+        "--client-gpu",
+        "3"
+    ],
+    "state": "running",
+    "program": "/home/boschaustin/projects/CL_AD/Carla_RL/examples/running_carla/training_scripts/train_ppo_model.py",
+    "git": {
+        "remote": "https://github.com/Stephanehk/Carla_RL.git",
+        "commit": "df0fb75e317ef59df29b1b44b70e3480c2d41fb3"
+    },
+    "email": null,
+    "root": "/home/stephane/Desktop/Carla_RL",
+    "host": "lambda-quad",
+    "username": "stephane",
+    "executable": "/home/stephane/miniconda3/envs/carla-challenge/bin/python3"
+}

@@ -8,7 +8,15 @@ def launch_carla_server(world_port=8000, gpu=0, boot_time=10):
     """Carla server instantiation"""
     os.environ["DISPLAY"] = ':0'
     # launches CarlaUE4.sh as subprocess
-    cmd = f'/home/boschaustin/projects/CL_AD/Carla_PPO/CARLA_9_10_1/CarlaUE4.sh ' \
+    # cmd = f'/home/boschaustin/projects/CL_AD/Carla_PPO/CARLA_9_10_1/CarlaUE4.sh ' \
+    #       f'--host=\'localhost\' ' \
+    #       f'--carla-rpc-port={world_port} ' \
+    #       f'--quality-level{{epic}} ' \
+    #       f'--resx={800} ' \
+    #       f'--resy={600} ' \
+    #       f'--gpu={gpu}' \
+    #       f'--opengl'
+    cmd = f'/home/stephane/Desktop/CARLA_0.9.11/CarlaUE4.sh ' \
           f'--host=\'localhost\' ' \
           f'--carla-rpc-port={world_port} ' \
           f'--quality-level{{epic}} ' \

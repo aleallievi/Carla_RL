@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/home/boschaustin/projects/CL_AD/Carla_RL/examples/running_carla/training_scripts/train_ppo_model.py", line 257, in <module>
+    main(parser.parse_args())
+  File "/home/boschaustin/projects/CL_AD/Carla_RL/examples/running_carla/training_scripts/train_ppo_model.py", line 241, in main
+    train_model(args)
+  File "/home/boschaustin/projects/CL_AD/Carla_RL/examples/running_carla/training_scripts/train_ppo_model.py", line 165, in train_model
+    with CarlaEnv(args, iters, save_video=save_video) as env:
+  File "/home/boschaustin/projects/CL_AD/Carla_RL/examples/running_carla/Carla_eval_tools/carla_env.py", line 37, in __init__
+    self._world = self._client.load_world(town)
+RuntimeError: time-out of 10000ms while waiting for the simulator, make sure the simulator is ready and connected to 127.0.0.1:9000

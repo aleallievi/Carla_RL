@@ -1,8 +1,10 @@
 #!/bin/bash
 # change these.
-CARLA_DIR=/home/boschaustin/projects/CL_AD/Carla_RL/CARLA_9_10_1
-AGENTS_DIR=/home/boschaustin/projects/CL_AD/Carla_RL/examples/running_carla
-SCRIPTS_DIR=/home/boschaustin/projects/CL_AD/Carla_RL/scripts
+#CARLA_DIR=/home/boschaustin/projects/CL_AD/Carla_RL/CARLA_9_10_1
+CARLA_DIR=/home/stephane/Desktop/CARLA_0.9.11
+AGENTS_DIR=/home/stephane/Desktop/Carla_RL/examples/running_carla/
+SCRIPTS_DIR=/home/stephane/Desktop/Carla_RL/scripts 
+
 
 export WORLD_PORT=9000
 export TM_PORT=$((${WORLD_PORT}+50))
@@ -21,4 +23,4 @@ export PYTHONPATH=$PYTHONPATH:$CARLA_DIR/PythonAPI/carla
 python3 ${SCRIPTS_DIR}/launch_carla.py --world-port $WORLD_PORT --gpu $SERVER_GPU
 
 #Launch CARLA client
-python3 ${AGENTS_DIR}/training_scripts/train_ppo_model.py --world-port $WORLD_PORT --tm-port $TM_PORT --client-gpu $CLIENT_GPU
+python3 ${AGENTS_DIR}/training_scripts/train_rllib_ppo.py --client-timeout 999 --world-port $WORLD_PORT --tm-port $TM_PORT --client-gpu $CLIENT_GPU
