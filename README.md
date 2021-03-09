@@ -1,5 +1,5 @@
 
-### Starting Carla on Bosch Lambda
+# Starting Carla on Bosch Lambda
 
 ## SSH
 
@@ -27,7 +27,7 @@ Script to run, Carla Directory, World Port, and TM Port are all set in `examples
 The Carla directory is also set in `/scripts/launch_carla.py`
 WANDB API Key is set in `examples/running_carla/training_scripts/...
 
-### Starting Carla on hypnotoad
+# Starting Carla on hypnotoad
 
 ## SSH
 
