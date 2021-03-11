@@ -1,11 +1,11 @@
 #!/bin/bash
 # change these.
-#CARLA_DIR=/home/boschaustin/projects/CL_AD/Carla_RL/CARLA_9_10_1
-CARLA_DIR=/home/stephane/Desktop/CARLA_0.9.11
+CARLA_DIR=/home/boschaustin/projects/CL_AD/Carla_RL/CARLA_9_10_1
+#CARLA_DIR=/home/stephane/Desktop/CARLA_0.9.11
 AGENTS_DIR=/home/stephane/Desktop/Carla_RL/examples/running_carla/
 SCRIPTS_DIR=/home/stephane/Desktop/Carla_RL/scripts 
 
-
+#stay clear of 2000-3000 range
 export WORLD_PORT=9000
 export TM_PORT=$((${WORLD_PORT}+50))
 export SERVER_GPU=2

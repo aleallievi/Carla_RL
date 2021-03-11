@@ -62,7 +62,7 @@ def main (args):
     CustomPolicy = PPOTorchPolicy.with_updates(name="Ported_PPO",loss_fn=custom_ppo_loss,postprocess_fn=compute_gae_for_sample_batch,before_loss_init=setup_mixins,mixins=[LearningRateSchedule, EntropyCoeffSchedule, KLCoeffMixin,ValueNetworkMixin])
     CustomTrainer = PPOTrainer.with_updates(name = "Custom_PPO_trainer",default_policy=CustomPolicy,get_policy_class=None)
     # results = tune.run(ppo.PPOTrainer, config=config, stop=stop,loggers=[WandbLogger])
-    results = tune.run(CustomTrainer, config=config, stop=stop,checkpoint_freq=1,checkpoint_at_end=True)
+    results = tune.run(CustomTrainer, config=config, stop=stop,checkpoint_freq=1,checkpoint_at_end=True,loggers=[WandbLogger])
 
     ray.shutdown()
     

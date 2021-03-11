@@ -3,7 +3,6 @@ import queue
 import numpy as np
 import cv2
 import carla
-# /home/stephane/Desktop/CARLA_0.9.11/PythonAPI/carla/dist/carla-0.9.11-py3.7-linux-x86_64.egg/carla/__init__.py
 import argparse
 import logging
 import time
@@ -17,10 +16,11 @@ import sys
 from .traffic_events import TrafficEventType
 from .statistics_manager import StatisticManager
 # #IK this is bad, fix file path stuff later :(
-sys.path.append("/home/stephane/Desktop/CARLA_0.9.11/PythonAPI/carla/agents/navigation")
+#sys.path.append("/home/stephane/Desktop/CARLA_0.9.11/PythonAPI/carla/agents/navigation")
+
+sys.path.append("/home/boschaustin/projects/CL_AD/Carla_RL/CARLA_9_10_1/PythonAPI/carla/agents/navigation")
 from global_route_planner import GlobalRoutePlanner
 from global_route_planner_dao import GlobalRoutePlannerDAO
-
 #from scripts.launch_carla import launch_carla_server
 #from scripts.kill_carla import kill_carla
 from .score_tests import RouteCompletionTest, InfractionsTests
