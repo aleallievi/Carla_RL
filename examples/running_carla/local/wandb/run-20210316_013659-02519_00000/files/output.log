@@ -1,0 +1,15 @@
+2021-03-16 01:38:58,959	WARNING tune.py:506 -- SIGINT received (e.g. via Ctrl+C), ending Ray Tune run. This will try to checkpoint the experiment state one last time. Press CTRL+C one more time (or send SIGINT/SIGKILL/SIGTERM) to skip. 
+Process _WandbLoggingProcess-1:
+Traceback (most recent call last):
+  File "/home/stephane/miniconda3/envs/carla-challenge/lib/python3.8/multiprocessing/process.py", line 315, in _bootstrap
+    self.run()
+  File "/home/stephane/miniconda3/envs/carla-challenge/lib/python3.8/site-packages/ray/tune/integration/wandb.py", line 199, in run
+    result = self.queue.get()
+  File "/home/stephane/miniconda3/envs/carla-challenge/lib/python3.8/multiprocessing/queues.py", line 97, in get
+    res = self._recv_bytes()
+  File "/home/stephane/miniconda3/envs/carla-challenge/lib/python3.8/multiprocessing/connection.py", line 216, in recv_bytes
+    buf = self._recv_bytes(maxlength)
+  File "/home/stephane/miniconda3/envs/carla-challenge/lib/python3.8/multiprocessing/connection.py", line 414, in _recv_bytes
+    buf = self._recv(4)
+  File "/home/stephane/miniconda3/envs/carla-challenge/lib/python3.8/multiprocessing/connection.py", line 379, in _recv
+    chunk = read(handle, remaining)

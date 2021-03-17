@@ -6,7 +6,7 @@ AGENTS_DIR=/home/stephane/Desktop/Carla_RL/examples/running_carla/
 SCRIPTS_DIR=/home/stephane/Desktop/Carla_RL/scripts 
 
 #stay clear of 2000-3000 range
-export WORLD_PORT=9000
+export WORLD_PORT=10000
 export TM_PORT=$((${WORLD_PORT}+50))
 export SERVER_GPU=2
 export CLIENT_GPU=3
