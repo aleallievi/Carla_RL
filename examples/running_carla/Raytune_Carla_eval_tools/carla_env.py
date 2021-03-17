@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2021 Computer Vision Center (CVC) at the Universitat Autonoma de
-# Barcelona (UAB).
-#
-# This work is licensed under the terms of the MIT license.
-# For a copy, see <https://opensource.org/licenses/MIT>.
-
-
+"""
+import
+"""
 from __future__ import print_function
 import gym
 import argparse
@@ -17,60 +13,100 @@ import numpy as np
 from .carla_core import CarlaCore
 import carla
 
+MIN_VELOCITY = -1 # m/s
+MAX_VELOCITY = 30 # m/s
+
+MIN_TARGET_DISTANCE = 0
+MAX_TARGET_DISTANCE = 100000
+
+MIN_PITCH = -360
+MAX_PITCH = 360
+
+MIN_YAW = -360
+MAX_YAW = 360
+
+MIN_ROLL = -360
+MAX_ROLL = 360
+
+IMG_DIM = 84
+RGB_CHANNELS = 3
+
+MIN_INTENSITY 0
+MAX_INTENSITY 255
+
+COMMAND = [2,2,2,2,2,2]
+
+
+"""
+Class
+"""
 class CarlaEnv(gym.Env):
+  # TODO: MUST HANDLE ADDING ARGS "config": {"args": args,},
+  def __init__(self, config):
+    self.config = config
+
+    self.action_space = Box(np.array([0,-1]),np.array([1,1]))
+    observation_space_dict = {
+      # TODO: 1 is number of samples when it should be batch size!
+      'img': Box(low=MIN_INTENSITY, 
+                 high=MAX_INTENSITY,
+                 shape=(IMG_DIM, IMG_DIM, RGB_CHANNELS), 
+                 dtype=np.float64), 
+      'velocity_mag': Box(low=MIN_VELOCITY, 
+                          high=MAX_VELOCITY,
+                          shape=(1,), 
+                          dtype=np.float32),
+      'd2target': Box(low=MIN_TARGET_DISTANCE, 
+                      high=MAX_TARGET_DISTANCE,
+                      shape=(1,), 
+                      dtype=np.float32),
+      'pitch': Box(low=-360, high=360,shape=(1,), dtype=np.float32),
+      'yaw': Box(low=-360, high=360,shape=(1,), dtype=np.float32),
+      'roll': Box(low=-360, high=360,shape=(1,), dtype=np.float32),
+
+      'command':MultiDiscrete(COMMAND)
+    }
+    self.observation_space = Dict(observation_space_dict)
+
+    args = self.config["args"]
+    args.client = self.launch_client(args)
+    self.core = CarlaCore(args,save_video=False,i=1)
+
     """
-    This is a carla environment, responsible of handling all the CARLA related steps of the training.
+    intiliaze
     """
-    #TODO: MUST HANDLE ADDING ARGS "config": {"args": args,},
-    def __init__(self, config):
-        """Initializes the environment"""
-        self.config = config
-        self.action_space = Box(np.array([0,-1]),np.array([1,1]))
+    self.reset()
 
-        observation_space_dict = {
-            'img': Box(low=0, high=255,shape=(84, 84, 3), dtype=np.float64), #TODO: 1 is number of samples when it should be batch size!
-            'velocity_mag': Box(low=-1, high=30,shape=(1,), dtype=np.float32), #assumes max velocity is 30 m/s
-            'd2target': Box(low=0, high=100000,shape=(1,), dtype=np.float32), #assumes max d2target is 100000m
-            'pitch': Box(low=-360, high=360,shape=(1,), dtype=np.float32),
-            'yaw': Box(low=-360, high=360,shape=(1,), dtype=np.float32),
-            'roll': Box(low=-360, high=360,shape=(1,), dtype=np.float32),
-            'command':MultiDiscrete([2,2,2,2,2,2])
-        }
-        #observation_space_dict = {'img': Box(low=0, high=255,shape=(1,80, 80, 3), dtype=np.uint8)}
+  """
+  launch
+  """
+  def launch_client(self,args):
+    client = carla.Client(args.host, args.world_port)
+    client.set_timeout(args.client_timeout)
+    return client
 
-        self.observation_space = Dict(observation_space_dict)
+  """
+  pull obs directly from state
+  """
+  def state2obs(self, s):
+    observation = {'img': s[0][0],
+                   'velocity_mag': [s[1]],
+                   'd2target': [s[2]],
+                   'pitch': [s[3]],
+                   'yaw': [s[4]],
+                   'roll': [s[5]],
+                   'command': s[6:]}
+    return observation
 
-        args = self.config["args"]
-        args.client = self.launch_client(args)
-        self.core = CarlaCore(args,save_video=False,i=1)
-        #CarlaCore(self.config['carla'])
-        # self.core.setup_experiment(self.experiment.config)
 
-        self.reset()
+  """
+  standard
+  """
 
-    def launch_client(self,args):
-        client = carla.Client(args.host, args.world_port)
-        client.set_timeout(args.client_timeout)
-        return client
+  def reset(self):
+    s, _, _, _ = self.core.reset(False, 0)
+    return self.state2obs(s)
 
-    def state2obs(self, s):
-        observation = {'img': s[0][0],
-                        'velocity_mag': [s[1]],
-                        'd2target': [s[2]],
-                        'pitch': [s[3]],
-                        'yaw': [s[4]],
-                        'roll': [s[5]],
-                        'command': s[6:]}
-        return observation
-
-    def reset(self):
-        # print ("TRYING TO RESET!")
-        s, _, _, _ = self.core.reset(False, 0)
-        # print ("SUCCESSFULLY RESET!")
-        return self.state2obs(s)
-
-    def step(self, action):
-        """Computes one tick of the environment in order to return the new observation,
-        as well as the rewards"""
-        s_prime, reward, done, info = self.core.step(action=action, timeout=2)
-        return self.state2obs(s_prime), reward, done, info
+  def step(self, action):
+    s_prime, reward, done, info = self.core.step(action=action, timeout=2)
+    return self.state2obs(s_prime), reward, done, info

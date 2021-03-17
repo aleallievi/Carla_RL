@@ -1,3 +1,6 @@
+"""
+lib
+"""
 import argparse
 import gym
 from gym.spaces import Discrete, Box, MultiBinary, Dict
@@ -42,6 +45,9 @@ from ray.rllib.utils.torch_ops import apply_grad_clipping, \
 from ray.rllib.agents.ppo.ppo_torch_policy import vf_preds_fetches, \
     ValueNetworkMixin, KLCoeffMixin, EntropyCoeffSchedule, LearningRateSchedule
 
+"""
+loss
+"""
 def custom_ppo_loss(policy, model, dist_class, train_batch):
     """
     Args:
@@ -54,10 +60,13 @@ def custom_ppo_loss(policy, model, dist_class, train_batch):
             of loss tensors.
     """
 
-    #https://docs.ray.io/en/master/rllib-concepts.html
-    #https://github.com/ray-project/ray/blob/master/rllib/agents/ppo/ppo_torch_policy.py
-    #https://github.com/ray-project/ray/blob/master/rllib/examples/custom_torch_policy.py
-    #https://github.com/ray-project/ray/issues/8507
+    """
+    references:
+    https://docs.ray.io/en/master/rllib-concepts.html
+    https://github.com/ray-project/ray/blob/master/rllib/agents/ppo/ppo_torch_policy.py
+    https://github.com/ray-project/ray/blob/master/rllib/examples/custom_torch_policy.py
+    https://github.com/ray-project/ray/issues/8507
+    """
 
     # We imperatively execute the forward pass by calling model() on the observations followed by dist_class() on the output logits. 
     logits, state = model.from_batch(train_batch, is_training=True)
@@ -69,11 +78,11 @@ def custom_ppo_loss(policy, model, dist_class, train_batch):
     #policy_ratio = torch.exp(current_action_log_probs - actions_log_probs.detach())
     policy_ratio = torch.exp(curr_action_dist.logp(train_batch[SampleBatch.ACTIONS]) - train_batch[SampleBatch.ACTION_LOGP])
 
-    #used as a regulizer
+    # used as a regulizer
     action_kl = prev_action_dist.kl(curr_action_dist)
     mean_kl = reduce_mean_valid(action_kl)
     
-    #for possible regularization parameter
+    # for possible regularization parameter
     curr_entropy = curr_action_dist.entropy()
     mean_entropy = reduce_mean_valid(curr_entropy)
 
@@ -82,7 +91,7 @@ def custom_ppo_loss(policy, model, dist_class, train_batch):
         train_batch[Postprocessing.ADVANTAGES] * torch.clamp(policy_ratio, 1 - policy.config["clip_param"],1 + policy.config["clip_param"]))
     mean_policy_loss = reduce_mean_valid(-update)
 
-    #GAE
+    # GAE
     prev_values = train_batch[SampleBatch.VF_PREDS]
     current_values = model.value_function()
 
@@ -125,13 +134,17 @@ def custom_ppo_loss(policy, model, dist_class, train_batch):
     
     return total_loss
 
-
 def setup_mixins(policy, obs_space,action_space,config):
     ValueNetworkMixin.__init__(policy, obs_space, action_space, config)
     KLCoeffMixin.__init__(policy, config)
     EntropyCoeffSchedule.__init__(policy, config["entropy_coeff"],
                                   config["entropy_coeff_schedule"])
     LearningRateSchedule.__init__(policy, config["lr"], config["lr_schedule"])
+
+
+"""
+discounted cumulative sum of rewards
+"""
 
 def discount_cumsum(delta_t,gamma):
     discounted = 0
@@ -140,8 +153,6 @@ def discount_cumsum(delta_t,gamma):
         discounted = delta_t[len(delta_t)-1-i]
     delta_t = np.array(delta_t,dtype=np.float64)
     return delta_t
-
-    
 
 def original_discount_cumsum(x,gamma):
     """Calculates the discounted cumulative sum over a reward sequence `x`.
@@ -154,7 +165,9 @@ def original_discount_cumsum(x,gamma):
     """
     return scipy.signal.lfilter([1], [1, float(-gamma)], x[::-1], axis=0)[::-1]
 
-
+"""
+advantages
+"""
 def compute_advantages(rollout,last_r,gamma = 0.9,lambda_= 1.0,use_gae=True,use_critic = True):
     """
     Given a rollout, compute its value targets and the advantages.
@@ -176,12 +189,14 @@ def compute_advantages(rollout,last_r,gamma = 0.9,lambda_= 1.0,use_gae=True,use_
     vpred_t = np.concatenate([rollout[SampleBatch.VF_PREDS],np.array([last_r])])
     
 
+    """
     #todo: there is a slight sigfig difference between this and the RLLIB delta calculation
-    # delta_t = [0 for i in range(len(rollout[SampleBatch.REWARDS]))]
-    # for i in reversed(range(len(rollout[SampleBatch.REWARDS]))):
-    #     delta_t[i] = rollout[SampleBatch.REWARDS][i] + gamma * vpred_t[i+1] - vpred_t[i]
+    delta_t = [0 for i in range(len(rollout[SampleBatch.REWARDS]))]
+    for i in reversed(range(len(rollout[SampleBatch.REWARDS]))):
+      delta_t[i] = rollout[SampleBatch.REWARDS][i] + gamma * vpred_t[i+1] - vpred_t[i]
+    """
 
-    #only to achieve idential results
+    #only to achieve identical results
     # delta_t = np.round(delta_t,8)
     delta_t = (rollout[SampleBatch.REWARDS] + gamma * vpred_t[1:] - vpred_t[:-1])
 
@@ -195,7 +210,6 @@ def compute_advantages(rollout,last_r,gamma = 0.9,lambda_= 1.0,use_gae=True,use_
     rollout[Postprocessing.ADVANTAGES] = rollout[Postprocessing.ADVANTAGES].astype(np.float32)
     return rollout
 
-
 def compute_gae_for_sample_batch(policy,sample_batch,other_agent_batches=None,episode=None):
     completed = sample_batch[SampleBatch.DONES][-1]
     if completed:
@@ -205,13 +219,16 @@ def compute_gae_for_sample_batch(policy,sample_batch,other_agent_batches=None,ep
         last_r = policy._value(**input_dict)
     return compute_advantages(sample_batch, last_r, policy.config["gamma"],policy.config["lambda"])
 
-
 def policy_gradient_loss(policy, model, dist_class, train_batch):
     logits, _ = model({SampleBatch.CUR_OBS: train_batch[SampleBatch.CUR_OBS]})
     action_dist = dist_class(logits, model)
     log_probs = action_dist.logp(train_batch[SampleBatch.ACTIONS])
     return -train_batch[SampleBatch.REWARDS].dot(log_probs)
 
+
+"""
+logging
+"""
 def on_episode_step(info):
     pass
     # episode = info["episode"]

@@ -1,10 +1,9 @@
 class Model():
+  def choose_action():
+    pass
 
-    def choose_action():
-        pass
+   def train():
+     pass
 
-    def train():
-        pass
-
-    def format_state():
-        pass
+   def format_state():
+    pass

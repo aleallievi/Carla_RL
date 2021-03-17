@@ -1,9 +1,11 @@
+"""
+libs
+"""
 import collections
 import queue
 import numpy as np
 import cv2
 import carla
-# /home/stephane/Desktop/CARLA_0.9.11/PythonAPI/carla/dist/carla-0.9.11-py3.7-linux-x86_64.egg/carla/__init__.py
 import argparse
 import logging
 import time
@@ -16,7 +18,6 @@ import sys
 
 from .traffic_events import TrafficEventType
 from .statistics_manager import StatisticManager
-# #IK this is bad, fix file path stuff later :(
 sys.path.append("/home/stephane/Desktop/CARLA_0.9.11/PythonAPI/carla/agents/navigation")
 from global_route_planner import GlobalRoutePlanner
 from global_route_planner_dao import GlobalRoutePlannerDAO
@@ -27,25 +28,45 @@ from .score_tests import RouteCompletionTest, InfractionsTests
 
 #TODO: Add n_vehicles and n_pedestrians in experiment_config and here
 
+
+"""
+defines
+"""
+FRAME_RATE = 5.0
+MAX_EP_LENGTH = 180
+TOWN = "Town01"
+EGO = "model3"
+CAR_SPAWN_SEED = 49
+
+"""
+Class
+"""
+
 class CarlaCore(object):
     def __init__(self, args, save_video=False, i = 0):
         # Tunable parameters
-        self.FRAME_RATE = 5.0  # in Hz
-        self.MAX_EP_LENGTH = 180  # in seconds
-        self.MAX_EP_LENGTH = self.MAX_EP_LENGTH / (1.0 / self.FRAME_RATE)  # convert to ticks
+        self.FRAME_RATE = FRAME_RATE
+        self.MAX_EP_LENGTH = MAX_EP_LENGTH / (1.0 / self.FRAME_RATE)  # convert to ticks
 
         self._client = args.client
 
-        self._town_name = "Town01"
-        self._world = self._client.load_world("Town01")
+        """
+        environment config
+        """
+        self._town_name = TOWN 
+        self._world = self._client.load_world(TON)
         self._map = self._world.get_map()
         self._blueprints = self._world.get_blueprint_library()
         self._spectator = self._world.get_spectator()
-        self._car_agent_model = self._blueprints.filter("model3")[0]
+        self._car_agent_model = self._blueprints.filter(EGO)[0]
         self.save_video = save_video
 
         # weather = getattr(carla.WeatherParameters, experiment_config["weather"])
         # self._world.set_weather(weather)
+
+        """
+        command one hot encoding vectors
+        """
 
         self.command2onehot =\
             {"RoadOption.LEFT":             [0, 0, 0, 0, 0, 1],
@@ -82,9 +103,15 @@ class CarlaCore(object):
         self._tick = 0
         self._car_agent = None
 
+        """
+        randomly span actors
+        """
+
         if(randomize):
-            self._settings.set(SendNonPlayerAgentsInfo=True, NumberOfVehicles=random.randrange(30),
-                              NumberOfPedestrians=random.randrange(30), WeatherId=random.randrange(14))
+            self._settings.set(SendNonPlayerAgentsInfo=True, 
+                              NumberOfVehicles=random.randrange(30),
+                              NumberOfPedestrians=random.randrange(30), 
+                              WeatherId=random.randrange(14))
             self._settings.randomize_seeds()
             self._world.apply_settings(self._settings)
 
@@ -98,7 +125,7 @@ class CarlaCore(object):
         self.followed_waypoints = []
 
         # spawn car at random location
-        np.random.seed(49)
+        np.random.seed(CAR_SPAWN_SEED)
         self._start_pose = np.random.choice(self._map.get_spawn_points())
 
         self._current_velocity = None
@@ -106,14 +133,18 @@ class CarlaCore(object):
         self._spawn_car_agent()
         print('car agent spawned')
 
-        # create random target to reach
+         """
+         create random target to reach
+         """
         np.random.seed(6)
         self._target_pose = np.random.choice(self._map.get_spawn_points())
         while(self._target_pose is self._start_pose):
             self.target = np.random.choice(self._map.get_spawn_points())
         self.get_route()
+
         # create statistics manager
         self.statistics_manager = StatisticManager(self.route_waypoints)
+
         # get all initial waypoints
         self._pre_ego_waypoint = self._map.get_waypoint(self._car_agent.get_location())
         self._time_start = time.time()
@@ -131,7 +162,9 @@ class CarlaCore(object):
         for sensor in self._actor_dict['camera']:
             make_queue(sensor.listen)
 
-        #TODO: Ciuld this be causing problems?
+        """
+        TODO: Could this be causing problems?
+        """
         for i in range(9):
             self._world.tick()
         self.frame = self._world.tick()
@@ -143,6 +176,9 @@ class CarlaCore(object):
         self.completion_test = RouteCompletionTest(self._car_agent, self.route_waypoints_unformatted, self._map)
         self.infractions_test = InfractionsTests(self._car_agent,self._map,self._world,self.route_waypoints_unformatted, self.route_waypoints, self._pre_ego_waypoint)
 
+
+    """
+    """
     def reset(self, randomize, i):
         self._cleanup()
         self.init(i)
@@ -164,6 +200,10 @@ class CarlaCore(object):
             end = begin + carla.Location(x=math.cos(angle), y=math.sin(angle))
             world.debug.draw_arrow(begin, end, arrow_size=0.3, life_time=1.0)
 
+
+    """
+    sensors
+    """
     def _setup_sensors(self, i, height=480, width=640, fov=10):
         sensor_relative_transform = carla.Transform(carla.Location(x=2.5, z=0.7))
 
@@ -204,17 +244,24 @@ class CarlaCore(object):
                 # print(self.frame)
                 return data
 
+
+    """
+    policy
+    """
     def step(self, timeout, action=None):
         self.started_sim = True
+
         # spectator camera with overhead view of ego vehicle
+        # pose
         spectator_rot = self._car_agent.get_transform().rotation
         spectator_rot.pitch -= 10
         self._spectator.set_transform(carla.Transform
-                                      (self._car_agent.get_transform().location + carla.Location(z=2), spectator_rot))
-        if action is not None:
-            self._car_agent.apply_control(carla.VehicleControl(throttle=float(action[0]), steer=float(action[1])))
-        else:
+                                      (self._car_agent.get_transform().location + carla.Location(z=2), 
+                                      spectator_rot))
+        if action is None:
             self._car_agent.apply_control(carla.VehicleControl(throttle=0.0, steer=0.0))
+        else:
+            self._car_agent.apply_control(carla.VehicleControl(throttle=float(action[0]), steer=float(action[1])))
 
         self.frame = self._world.tick()
         # time.sleep(0.5)
@@ -282,7 +329,8 @@ class CarlaCore(object):
         # self.statistics_manager.prev_d_completed = self.d_completed
         # self.statistics_manager.prev_velocity_kmh = velocity_kmh
         #------------------------------------------------------------------------------------------------------------------
-        #reset is blocked if car is moving
+
+        # reset is blocked if car is moving
         if self.cur_velocity > 0 and self.blocked:
             self.blocked = False
             self.blocked_start = 0
@@ -321,6 +369,9 @@ class CarlaCore(object):
         if self.out != None:
             self.out.release()
 
+    """
+    rendering
+    """
     def set_sync_mode(self, sync):
         settings = self._world.get_settings()
         settings.synchronous_mode = sync
@@ -344,6 +395,9 @@ class CarlaCore(object):
             self.route_waypoints_unformatted.append(waypoint)
         self.route_kdtree = KDTree(np.array(self.route_waypoints))
 
+    """
+    viz
+    """
     def process_img(self, img, height, width):
         img_reshaped = np.frombuffer(img.raw_data, dtype='uint8').reshape(480, 640, 4)
         rgb_reshaped = img_reshaped[:, :, :3]
@@ -370,8 +424,9 @@ class CarlaCore(object):
             self.n_img+=1
         return rgb_f
 
-    '''Evaluation tools'''
-
+    """
+    Evaluation tools
+    """
     def handle_collision(self, event):
         distance_vector = self._car_agent.get_location() - event.other_actor.get_location()
         distance = math.sqrt(math.pow(distance_vector.x, 2) + math.pow(distance_vector.y, 2))

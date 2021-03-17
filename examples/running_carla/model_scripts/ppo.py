@@ -16,11 +16,15 @@ from torch.distributions import MultivariateNormal
 from torch.distributions import kl
 
 class PPO_Agent(nn.Module):
-    def __init__(self, linear_state_dim, action_dim, action_std,lr, gamma, n_epochs,clip_val,device):
+    def __init__(self, linear_state_dim, 
+                       action_dim, 
+                       action_std,
+                       lr, 
+                       gamma,
+                        n_epochs,
+                       clip_val,device):
         """
         Initializes PPO actor critic models
-        """
-
         super(PPO_Agent, self).__init__()
         # action mean range -1 to 1
         self.actorConv = nn.Sequential(
@@ -50,6 +54,7 @@ class PPO_Agent(nn.Module):
                 nn.MaxPool2d(2, 2),
                 nn.Flatten()
                 )
+
         self.criticLin = nn.Sequential(
                 nn.Linear(12*17*17 + linear_state_dim, 64),
                 nn.Tanh(),
@@ -57,6 +62,7 @@ class PPO_Agent(nn.Module):
                 nn.Tanh(),
                 nn.Linear(32, 1)
                 )
+
         self.device = device
         self.action_var = torch.full((action_dim,), action_std*action_std).to(self.device)
 
@@ -72,7 +78,6 @@ class PPO_Agent(nn.Module):
         Input: formatted frame and measurements
         Output: mean of action probability distribution (as a tensor)
         """
-
         frame = frame.to(self.device)
         mes = mes.to(self.device)
         if len(list(mes.size())) == 1:
@@ -86,7 +91,6 @@ class PPO_Agent(nn.Module):
         Input: formatted frame and measurements
         Output: value of current state (as a tensor)
         """
-
         frame = frame.to(self.device)
         mes = mes.to(self.device)
         if len(list(mes.size())) == 1:
@@ -100,7 +104,6 @@ class PPO_Agent(nn.Module):
         Input: formatted frame and measurements
         Output: formatted action and action log probability (as tensors)
         """
-
         with torch.no_grad():
             mean = self.actor(frame, mes)
             cov_matrix = torch.diag(self.action_var).to(self.device)
