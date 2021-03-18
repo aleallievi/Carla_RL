@@ -1,34 +1,43 @@
+"""
+lib
+"""
 import time
 
 import cv2
-import carla
-
+import team_code.base
 from leaderboard.autoagents import autonomous_agent
-from team_code.planner import RoutePlanner
 
+# autopilot
+from team_code.planner import routeplanner 
+from base import *
 
-class BaseAgent(autonomous_agent.AutonomousAgent):
-    def setup(self, path_to_conf_file):
-        self.track = autonomous_agent.Track.SENSORS
-        self.config_path = path_to_conf_file
-        self.step = -1
-        self.wall_start = time.time()
-        self.initialized = False
+"""
+class
+"""
 
-    def _init(self):
-        self._command_planner = RoutePlanner(7.5, 25.0, 257)
-        self._command_planner.set_route(self._global_plan, True)
+class base_agent(autonomous_agent.AutonomousAgent):
+  def setup(self, path_to_conf_file):
+    print("SETUP BASEAGENT")
+    self.track = autonomous_agent.Track.SENSORS
+    self.config_path = path_to_conf_file
+    self.step = -1
+    self.wall_start = time.time()
+    self.initialized = False
+    self.manager = None
 
-        self.initialized = True
+  def _init(self):
+    print("INIT BASEAGENT")
+    self._command_planner = routeplanner(7.5, 25.0, 257)
+    self._command_planner.set_route(self._global_plan, True)
+    self.initialized = True
 
-    def _get_position(self, tick_data):
-        gps = tick_data['gps']
-        gps = (gps - self._command_planner.mean) * self._command_planner.scale
+  def _get_position(self, tick_data):
+    gps = tick_data[GPS]
+    gps = (gps - self._command_planner.mean) * self._command_planner.scale
+    return gps
 
-        return gps
-
-    def sensors(self):
-        return [
+  def sensors(self):
+    return [
                 {
                     'type': 'sensor.camera.rgb',
                     'x': 1.3, 'y': 0.0, 'z': 1.3,
@@ -71,21 +80,33 @@ class BaseAgent(autonomous_agent.AutonomousAgent):
                     }
                 ]
 
-    def tick(self, input_data):
-        self.step += 1
+  """
+  bug: causes map_agent to "sensor()" twice
+  """
+  def sensors_broken(self):
+    return SENSORS
 
-        rgb = cv2.cvtColor(input_data['rgb'][1][:, :, :3], cv2.COLOR_BGR2RGB)
-        rgb_left = cv2.cvtColor(input_data['rgb_left'][1][:, :, :3], cv2.COLOR_BGR2RGB)
-        rgb_right = cv2.cvtColor(input_data['rgb_right'][1][:, :, :3], cv2.COLOR_BGR2RGB)
-        gps = input_data['gps'][1][:2]
-        speed = input_data['speed'][1]['speed']
-        compass = input_data['imu'][1][-1]
+  """
+  tick
+  """
+  def tick(self, input_data):
+    self.step += 1
 
-        return {
-                'rgb': rgb,
-                'rgb_left': rgb_left,
-                'rgb_right': rgb_right,
-                'gps': gps,
-                'speed': speed,
-                'compass': compass
-                }
+    rgb = cv2.cvtColor(input_data[CENTER_CAMERA][1][:, :, :3], 
+                       cv2.COLOR_BGR2RGB)
+    rgb_left = cv2.cvtColor(input_data[LEFT_CAMERA][1][:, :, :3], 
+                            cv2.COLOR_BGR2RGB)
+    rgb_right = cv2.cvtColor(input_data[RIGHT_CAMERA][1][:, :, :3], 
+                             cv2.COLOR_BGR2RGB)
+    gps = input_data[GPS][1][:2]
+    speed = input_data[SPEEDOMETER][1][SPEEDOMETER]
+    imu = input_data[IMU][1][-1]
+
+    return {
+            CENTER_CAMERA: rgb,
+            LEFT_CAMERA: rgb_left,
+            RIGHT_CAMERA: rgb_right,
+            GPS: gps,
+            SPEEDOMETER: speed,
+            'compass':imu 
+           }

@@ -212,6 +212,8 @@ class SensorInterface(object):
 
         self._sensors_objects[tag] = sensor
 
+        print("Registered", tag, sensor_type, sensor)
+
         if sensor_type == 'sensor.opendrive_map': 
             self._opendrive_tag = tag
 

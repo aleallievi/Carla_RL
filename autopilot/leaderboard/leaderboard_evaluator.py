@@ -23,6 +23,8 @@ import pkg_resources
 import sys
 import torchvision
 
+print(sys.version)
+
 import carla
 import signal
 
@@ -95,6 +97,7 @@ class LeaderboardEvaluator(object):
 
         # Create the ScenarioManager
         self.manager = ScenarioManager(args.timeout, args.debug > 1)
+   
 
         # Time control for summary purposes
         self._start_time = GameTime.get_time()
@@ -226,6 +229,15 @@ class LeaderboardEvaluator(object):
             raise Exception("The CARLA server uses the wrong map!"
                             "This scenario requires to use map {}".format(town))
 
+    def query_statistics(self):
+        current_stats_record = self.statistics_manager.compute_route_statistics(
+            self.scenario_config,
+            self.manager.scenario_duration_system,
+            self.manager.scenario_duration_game,
+            "INFO" 
+        )
+        return current_stats_record
+
     def _register_statistics(self, config, checkpoint, entry_status, crash_message=""):
         """
         Computes and saved the simulation statistics
@@ -254,6 +266,7 @@ class LeaderboardEvaluator(object):
 
         print("\n\033[1m========= Preparing {} (repetition {}) =========".format(config.name, config.repetition_index))
         print("> Setting up the agent\033[0m")
+        self.scenario_config = config
 
         # Prepare the statistics of the route
         self.statistics_manager.set_route(config.name, config.index)
@@ -264,6 +277,10 @@ class LeaderboardEvaluator(object):
             agent_class_name = getattr(self.module_agent, 'get_entry_point')()
             self.agent_instance = getattr(self.module_agent, agent_class_name)(args.agent_config)
             config.agent = self.agent_instance
+
+            # Allow Agent to query Scenario State (for now)
+            print("Point", self.agent_instance, "to", self.manager)
+            self.agent_instance.manager = self
 
             # Check and store the sensors
             if not self.sensors:

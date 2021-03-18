@@ -1,99 +1,118 @@
+"""
+lib
+"""
 import os
 from collections import deque
-
 import numpy as np
 
+# autopilot
+from plotter import *
+from base import *
 
-DEBUG = int(os.environ.get('HAS_DISPLAY', 0))
+"""
+define
+"""
+# gps
+GPS_ENABLED_DEFAULT  = False
 
+# debug
+DEFAULT_DEBUG_SIZE = 256
 
-class Plotter(object):
-    def __init__(self, size):
-        self.size = size
-        self.clear()
-        self.title = str(self.size)
+# visualization 
+MIN_INTENSITY = 0
+MAX_INTENSITY = 255
+RGB_RED = (MAX_INTENSITY, MIN_INTENSITY, MIN_INTENSITY)
+RGB_GREEN = (MIN_INTENSITY, MAX_INTENSITY, MIN_INTENSITY)
+RGB_BLUE = (MIN_INTENSITY, MAX_INTENSITY, MAX_INTENSITY)
 
-    def clear(self):
-        from PIL import Image, ImageDraw
+# magic
+MAGIC_SCALE = [111324.60662786, 73032.1570362]
+MAGIC_MEAN = [49.0, 8.0]
 
-        self.img = Image.fromarray(np.zeros((self.size, self.size, 3), dtype=np.uint8))
-        self.draw = ImageDraw.Draw(self.img)
+"""
+class
+"""
+class routeplanner(object):
+  def __init__(self, 
+               min_distance, 
+               max_distance, 
+               debug_size=DEFAULT_DEBUG_SIZE):
+    print("INIT ROUTEPLANNER")
+    self.route = deque()
+    self.min_distance, self.max_distance  = min_distance, max_distance
+    self.display_planner = DISPLAY_PLANNER
 
-    def dot(self, pos, node, color=(255, 255, 255), r=2):
-        x, y = 5.5 * (pos - node)
-        x += self.size / 2
-        y += self.size / 2
+    """
+    ?????
+    """
+    self.mean = np.array(MAGIC_MEAN)
+    self.scale = np.array(MAGIC_SCALE)
+    self.debug = plotter(debug_size)
 
-        self.draw.ellipse((x-r, y-r, x+r, y+r), color)
+  """
+  route 
+  """
+  def set_route(self, global_plan, gps=GPS_ENABLED_DEFAULT):
+    self.route.clear()
+    for pos, cmd in global_plan:
+       if gps:
+         pos = np.array([pos['lat'], pos['lon']])
+         pos -= self.mean
+         pos *= self.scale
+       else:
+         pos = np.array([pos.location.x, pos.location.y])
+         pos -= self.mean
+       self.route.append((pos, cmd))
 
-    def show(self):
-        if not DEBUG:
-            return
+  def run_step(self, gps):
+    self.debug.clear()
 
-        import cv2
+    if len(self.route) == 1:
+      return self.route[0]
 
-        cv2.imshow(self.title, cv2.cvtColor(np.array(self.img), cv2.COLOR_BGR2RGB))
-        cv2.waitKey(1)
+    to_pop = 0
+    farthest_in_range = -np.inf
+    cumulative_distance = 0.0
 
+    """
+    loop
+    """
+    for i in range(1, len(self.route)):
+      if cumulative_distance > self.max_distance:
+        break
+      #if
 
-class RoutePlanner(object):
-    def __init__(self, min_distance, max_distance, debug_size=256):
-        self.route = deque()
-        self.min_distance = min_distance
-        self.max_distance = max_distance
+      cumulative_distance += np.linalg.norm(self.route[i][0] - 
+                                            self.route[i-1][0])
+      distance = np.linalg.norm(self.route[i][0] - gps)
 
-        self.mean = np.array([49.0, 8.0])
-        self.scale = np.array([111324.60662786, 73032.1570362])
+      if distance <= self.min_distance and distance > farthest_in_range:
+        farthest_in_range = distance
+        to_pop = i
+      #if
 
-        self.debug = Plotter(debug_size)
+      r = MAX_INTENSITY * int(distance > self.min_distance)
+      g = MAX_INTENSITY * int(self.route[i][1].value == 4)
+      b = MAX_INTENSITY 
 
-    def set_route(self, global_plan, gps=False):
-        self.route.clear()
+      if self.display_planner: 
+        self.debug.dot(gps, self.route[i][0], (r, g, b))
+      #if 
+    #for
 
-        for pos, cmd in global_plan:
-            if gps:
-                pos = np.array([pos['lat'], pos['lon']])
-                pos -= self.mean
-                pos *= self.scale
-            else:
-                pos = np.array([pos.location.x, pos.location.y])
-                pos -= self.mean
+    for _ in range(to_pop):
+      if len(self.route) > 2:
+        self.route.popleft()
+    #for
 
-            self.route.append((pos, cmd))
+    if self.display_planner: 
+      self.visualize_dots(gps)
 
-    def run_step(self, gps):
-        self.debug.clear()
+    return self.route[1]
+  # end def
 
-        if len(self.route) == 1:
-            return self.route[0]
-
-        to_pop = 0
-        farthest_in_range = -np.inf
-        cumulative_distance = 0.0
-
-        for i in range(1, len(self.route)):
-            if cumulative_distance > self.max_distance:
-                break
-
-            cumulative_distance += np.linalg.norm(self.route[i][0] - self.route[i-1][0])
-            distance = np.linalg.norm(self.route[i][0] - gps)
-
-            if distance <= self.min_distance and distance > farthest_in_range:
-                farthest_in_range = distance
-                to_pop = i
-
-            r = 255 * int(distance > self.min_distance)
-            g = 255 * int(self.route[i][1].value == 4)
-            b = 255
-            self.debug.dot(gps, self.route[i][0], (r, g, b))
-
-        for _ in range(to_pop):
-            if len(self.route) > 2:
-                self.route.popleft()
-
-        self.debug.dot(gps, self.route[0][0], (0, 255, 0))
-        self.debug.dot(gps, self.route[1][0], (255, 0, 0))
-        self.debug.dot(gps, gps, (0, 0, 255))
-        self.debug.show()
-
-        return self.route[1]
+  def visualize_dots(self, gps):
+    self.debug.dot(gps, self.route[0][0], RGB_GREEN)
+    self.debug.dot(gps, self.route[1][0], RGB_RED)
+    self.debug.dot(gps, gps, RGB_BLUE)
+    self.debug.show()

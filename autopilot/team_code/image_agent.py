@@ -10,19 +10,16 @@ from PIL import Image, ImageDraw
 from carla_project.src.image_model import ImageModel
 from carla_project.src.converter import Converter
 
-from team_code.base_agent import BaseAgent
-from team_code.pid_controller import PIDController
-
-
-DEBUG = int(os.environ.get('HAS_DISPLAY', 0))
-
+from team_code.base_agent import base_agent 
+from team_code.pid_controller import pid_controller 
+from base import *
 
 def get_entry_point():
     return 'ImageAgent'
 
 
 def debug_display(tick_data, target_cam, out, steer, throttle, brake, desired_speed, step):
-    _rgb = Image.fromarray(tick_data['rgb'])
+    _rgb = Image.fromarray(tick_data[CENTER_CAMERA])
     _draw_rgb = ImageDraw.Draw(_rgb)
     _draw_rgb.ellipse((target_cam[0]-3,target_cam[1]-3,target_cam[0]+3,target_cam[1]+3), (255, 255, 255))
 
@@ -32,7 +29,7 @@ def debug_display(tick_data, target_cam, out, steer, throttle, brake, desired_sp
 
         _draw_rgb.ellipse((x-2, y-2, x+2, y+2), (0, 0, 255))
 
-    _combined = Image.fromarray(np.hstack([tick_data['rgb_left'], _rgb, tick_data['rgb_right']]))
+    _combined = Image.fromarray(np.hstack([tick_data[LEFT_CAMERA], _rgb, tick_data[RIGHT_CAMERA]]))
     _draw = ImageDraw.Draw(_combined)
     _draw.text((5, 10), 'Steer: %.3f' % steer)
     _draw.text((5, 30), 'Throttle: %.3f' % throttle)
@@ -43,8 +40,7 @@ def debug_display(tick_data, target_cam, out, steer, throttle, brake, desired_sp
     cv2.imshow('map', cv2.cvtColor(np.array(_combined), cv2.COLOR_BGR2RGB))
     cv2.waitKey(1)
 
-
-class ImageAgent(BaseAgent):
+class ImageAgent(base_agent):
     def setup(self, path_to_conf_file):
         super().setup(path_to_conf_file)
 
@@ -54,14 +50,15 @@ class ImageAgent(BaseAgent):
         self.net.eval()
 
     def _init(self):
+        print("INIT IMAGEAGENT")
         super()._init()
 
-        self._turn_controller = PIDController(K_P=1.25, K_I=0.75, K_D=0.3, n=40)
-        self._speed_controller = PIDController(K_P=5.0, K_I=0.5, K_D=1.0, n=40)
+        self._turn_controller = pid_controller(K_P=1.25, K_I=0.75, K_D=0.3, n=40)
+        self._speed_controller = pid_controller(K_P=5.0, K_I=0.5, K_D=1.0, n=40)
 
     def tick(self, input_data):
         result = super().tick(input_data)
-        result['image'] = np.concatenate(tuple(result[x] for x in ['rgb', 'rgb_left', 'rgb_right']), -1)
+        result['image'] = np.concatenate(tuple(result[x] for x in [CENTER_CAMERA, LEFT_CAMERA, RIGHT_CAMERA]), -1)
 
         theta = result['compass']
         theta = 0.0 if np.isnan(theta) else theta
