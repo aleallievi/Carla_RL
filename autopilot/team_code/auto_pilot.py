@@ -53,6 +53,8 @@ MAX_SPEED = 7.0
 # steer
 MIN_STEER = -1.0
 MAX_STEER = 1.0
+LARGE_FARBY_STEER = 45.0
+LARGE_NEARBY_STEER = 5.0
 
 # obstacles
 OBSTACLE_FREE = None
@@ -114,7 +116,7 @@ class AutoPilot(MapAgent):
     self.light_obstacles = 0
     self.speeds = 0
     self.brakes = 0
-    self.slows = 0
+    self.reduce_speed = 0
     self.red_lights = 0
     self.stop_signs = 0
     self.weather_key = None
@@ -176,13 +178,22 @@ class AutoPilot(MapAgent):
     return self.tick(sensors)
 
   """
-  how is this used?
+  compute furthest nearby waypoint, and furthest farby waypoint
+  (with command RoadOption.labels)
   """
   def plan_trajectory(self, sensor_data):
     gps = self._get_position(sensor_data)
-    near_node, near_command = self._waypoint_planner.run_step(gps)
-    far_node, far_command = self._command_planner.run_step(gps)
+    near_node, near_command = self.furthest_nearby_waypoint(gps)
+    far_node, far_command = self.furthest_farby_waypoint(gps)
     return near_node, near_command, far_node, far_command 
+
+  def furthest_nearby_waypoint(self, gps):
+    # interpolated route 
+    return self._waypoint_planner.run_step(gps)
+
+  def furthest_farby_waypoint(self, gps):
+    # non interpolated route 
+    return self._command_planner.run_step(gps)
 
   """
   action to control
@@ -203,7 +214,7 @@ class AutoPilot(MapAgent):
 
   def rule_based_policy(self, observations):
     """
-    update trajectory, commands
+    update trajectory, command RoadOption.labels
     """
     near_target, near_command, far_target, far_command = self.plan_trajectory(observations)
 
@@ -213,7 +224,10 @@ class AutoPilot(MapAgent):
     # pose, velocity
     pos, theta, speed = self.pose_estimation(observations)
 
-    # angles
+    """
+    compute angles to near and far waypoint targets. unnorms 
+    steering limits determine throttle
+    """
     angle, angle_unnorm, angle_far_unnorm = self.update_angles(pos, theta, near_target, far_target)
 
     """
@@ -244,8 +258,10 @@ class AutoPilot(MapAgent):
       print("Steps:", self.step)
       print("FPS:", fps)
       print("Weather:", self.weather_key)
-      print("Far:", far_command)
       print("Near:", near_command)
+      print("Near Target:", near_target)
+      print("Far:", far_command)
+      print("Far Target:", far_target)
       print("Position:", pos)
       print("Heading:", theta)
       print("Speed:", speed)
@@ -254,7 +270,7 @@ class AutoPilot(MapAgent):
       print("Brake:", brake)
       print("Steer:", steer)
       print("Brakes:", self.brakes)
-      print("Slows:", self.slows)
+      print("Reduce Speed:", self.reduce_speed)
       print("Vehicles:", self.vehicle_obstacles)
       print("Lights:", self.light_obstacles)
       print("Red Lights:", self.red_lights)
@@ -271,7 +287,7 @@ class AutoPilot(MapAgent):
       print("Route deviation:", len(route_record.infractions['route_dev']))
       print("Route timeout:", len(route_record.infractions['route_timeout']))
       print("Vehicle Blocked:", len(route_record.infractions['vehicle_blocked']))
-      print("Run Red light:", len(route_record.infractions['red_light']))
+      print("Run red light:", len(route_record.infractions['red_light']))
       print("Run stop sign:", len(route_record.infractions['stop_infraction']))
       print(route_record.scores)
       print()
@@ -335,12 +351,15 @@ class AutoPilot(MapAgent):
     return steer
 
   def update_throttle(self, speed, brake, angle_unnorm, angle_far_unnorm):
-    should_slow = abs(angle_far_unnorm) > 45.0 or abs(angle_unnorm) > 5.0
-    if(should_slow):
-      self.slows +=1
+    # if large farby steering or large nearby steering, then slow down
+    reduce_speed =  ((abs(angle_far_unnorm) > LARGE_FARBY_STEER) or
+                        (abs(angle_unnorm) > LARGE_NEARBY_STEER))
+    if(reduce_speed):
+      print("Reduce speed due to large farby steering or nearby steering risk")
+      self.reduce_speed +=1
 
     # Slow Down or Max Speed
-    target_speed = MID_SPEED if should_slow else MAX_SPEED
+    target_speed = MID_SPEED if reduce_speed else MAX_SPEED
     target_speed = target_speed if not brake else NO_SPEED
 
     if not brake:

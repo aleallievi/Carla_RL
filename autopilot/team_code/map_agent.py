@@ -12,6 +12,16 @@ from carla_project.src.carla_env import draw_traffic_lights, get_nearby_lights
 from base import *
 
 """
+Constants
+"""
+GPS_ENABLED_DEFAULT = True
+
+NEARBY_WAYPOINT_DISTANCE = 4.0
+MAX_VIS_NEARBY_WAYPOINT_DISTANCE = 25.0
+DEBUG_LEN = 257 # why?
+
+
+"""
 carla entry
 """
 def get_entry_point():
@@ -41,18 +51,24 @@ class MapAgent(base_agent):
   global plan
   """
   def set_global_plan(self, global_plan_gps, global_plan_world_coord):
+
+    """
+    interpolated trajectory
+    """
     super().set_global_plan(global_plan_gps, global_plan_world_coord)
 
-    self._plan_HACK = global_plan_world_coord
-    self._plan_gps_HACK = global_plan_gps
+    self._plan_gps = global_plan_gps
+    print("map_agent interpolated global_route len:", len(global_plan_gps))
 
   def _init(self):
     print("INIT MAPAGENT")
     super()._init()
     self._vehicle = CarlaDataProvider.get_hero_actor()
+    self.gps = GPS_ENABLED_DEFAULT
 
-    self._waypoint_planner = routeplanner(4.0, 50)
-    self._waypoint_planner.set_route(self._plan_gps_HACK, True)
+    self._waypoint_planner = routeplanner(NEARBY_WAYPOINT_DISTANCE, 
+                                          MAX_VIS_NEARBY_WAYPOINT_DISTANCE)
+    self._waypoint_planner.set_route(self._plan_gps, self.gps)
     self._world = self._vehicle.get_world()
 
     self._traffic_lights = list()

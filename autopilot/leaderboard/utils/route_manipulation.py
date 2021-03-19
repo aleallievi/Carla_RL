@@ -154,5 +154,8 @@ def interpolate_trajectory(world, waypoints_trajectory, hop_resolution=1.0):
             route.append((wp_tuple[0].transform, wp_tuple[1]))
 
     lat_ref, lon_ref = _get_latlon_ref(world)
+    print("interpolate_trajectory() from len:", \
+           len(waypoints_trajectory),\
+          "to:", len(route))
 
     return location_route_to_gps(route, lat_ref, lon_ref), route

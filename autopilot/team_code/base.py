@@ -14,14 +14,14 @@ DISPLAY_PLOTTER = False # pass
 
 # environments
 
-TOWNS {
-  "Town01": "A basic town layout with all "T junctions"."
-  "Town02": "Similar to Town01, but smaller."
-  "Town03": "The most complex town, with a 5-lane junction, a roundabout, unevenness, a tunnel, and much more. Essentially a medley."
-  "Town04": "An infinite loop with a highway and a small town."
-  "Town05": "Squared-grid town with cross junctions and a bridge. It has multiple lanes per direction. Useful to perform lane changes."
-  "Town06": "Long highways with many highway entrances and exits. It also has a Michigan left."
-  "Town07": "A rural environment with narrow roads, barely non traffic lights and barns."
+TOWNS = {
+  "Town01": "A basic town layout with all 'T junctions'.",
+  "Town02": "Similar to Town01, but smaller.",
+  "Town03": "The most complex town, with a 5-lane junction, a roundabout, unevenness, a tunnel, and much more. Essentially a medley.",
+  "Town04": "An infinite loop with a highway and a small town.",
+  "Town05": "Squared-grid town with cross junctions and a bridge. It has multiple lanes per direction. Useful to perform lane changes.",
+  "Town06": "Long highways with many highway entrances and exits. It also has a Michigan left.",
+  "Town07": "A rural environment with narrow roads, barely non traffic lights and barns.",
   "Town10": "A city environment with with different environments such as an avenue or a promenade, and more realistic textures."
 }
 

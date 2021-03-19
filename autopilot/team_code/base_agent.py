@@ -11,6 +11,12 @@ from leaderboard.autoagents import autonomous_agent
 from team_code.planner import routeplanner 
 from base import *
 
+FARBY_WAYPOINT_DISTANCE= 7.5
+# visualization only
+MAX_VIS_FARBY_WAYPOINT_DISTANCE = 25.0
+DEBUG_LEN = 257 # why?
+GPS_ENABLED_DEFAULT = True
+
 """
 class
 """
@@ -24,11 +30,15 @@ class base_agent(autonomous_agent.AutonomousAgent):
     self.wall_start = time.time()
     self.initialized = False
     self.manager = None
+    self.gps = GPS_ENABLED_DEFAULT
 
   def _init(self):
+    self._command_planner = routeplanner(FARBY_WAYPOINT_DISTANCE, 
+                                         MAX_VIS_FARBY_WAYPOINT_DISTANCE, 
+                                         DEBUG_LEN)
+    self._command_planner.set_route(self._global_plan, self.gps)
     print("INIT BASEAGENT")
-    self._command_planner = routeplanner(7.5, 25.0, 257)
-    self._command_planner.set_route(self._global_plan, True)
+    print("baseagent downsampled route len: ", len(self._global_plan))
     self.initialized = True
 
   def _get_position(self, tick_data):
