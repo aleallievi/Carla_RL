@@ -192,7 +192,7 @@ torchvision==0.8.2
 tornado==6.1
 tqdm==4.54.0
 traitlets==4.3.3
-twisted==17.9.0
+twisted==20.3.0
 typed-ast==1.1.1
 typing-extensions==3.7.4.3
 ufw==0.36
