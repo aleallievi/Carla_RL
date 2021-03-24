@@ -113,7 +113,7 @@ parso==0.7.1
 pbr==5.1.1
 pexpect==4.8.0
 pickleshare==0.7.5
-pillow==8.0.1
+pillow==8.1.1
 pip==9.0.1
 ply==3.11
 plyfile==0.7.2
