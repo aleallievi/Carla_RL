@@ -112,7 +112,7 @@ pathlib==1.0.1
 pathtools==0.1.2
 pexpect==4.8.0
 pickleshare==0.7.5
-pillow==7.2.0
+pillow==9.0.1
 pip==21.0
 prometheus-client==0.9.0
 promise==2.3
