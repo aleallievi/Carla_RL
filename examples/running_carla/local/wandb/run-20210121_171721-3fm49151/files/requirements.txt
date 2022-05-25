@@ -96,7 +96,7 @@ pycparser==2.20
 pydot==1.4.1
 pygame==2.0.1
 pygments==2.7.4
-pyjwt==2.0.1
+pyjwt==2.4.0
 pyopenssl==20.0.1
 pyparsing==2.4.7
 pyrsistent==0.17.3
