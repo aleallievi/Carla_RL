@@ -138,7 +138,7 @@ tornado==6.1
 tqdm==4.56.0
 traitlets==5.0.5
 typing-extensions==3.7.4.3
-urllib3==1.26.2
+urllib3==1.26.5
 wandb==0.10.14
 watchdog==0.10.4
 wcwidth==0.2.5
