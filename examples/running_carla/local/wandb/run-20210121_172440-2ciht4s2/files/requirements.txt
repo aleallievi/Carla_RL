@@ -117,7 +117,7 @@ scikit-learn==0.23.2
 scipy==1.5.2
 send2trash==1.5.0
 sentry-sdk==0.19.5
-setuptools==51.3.3.post20210118
+setuptools==65.5.1
 shapely==1.7.1
 shortuuid==1.0.1
 sip==4.19.13
