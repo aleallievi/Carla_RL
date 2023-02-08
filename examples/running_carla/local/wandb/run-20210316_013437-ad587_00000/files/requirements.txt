@@ -25,7 +25,7 @@ cma==3.0.3
 colorama==0.4.4
 colorful==0.5.4
 configparser==5.0.1
-cryptography==3.3.1
+cryptography==39.0.1
 cycler==0.10.0
 cython==0.29.21
 decorator==4.4.2
